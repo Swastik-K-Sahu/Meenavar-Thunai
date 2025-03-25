@@ -10,8 +10,8 @@ plugins {
 
 android {
     namespace = "com.example.meenavar_thunai"
-    compileSdk = 34
-    ndkVersion = "27.0.12077973"
+    compileSdk = 35
+    ndkVersion = "29.0.13113456"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -23,12 +23,15 @@ android {
     }
 
     defaultConfig {
+        def apiKey = project.hasProperty('API_KEY') ? project.API_KEY : ""
+        manifestPlaceholders = [API_KEY: apiKey]
+
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.meenavar_thunai"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        minSdkVersion(23)
+        targetSdkVersion(35)
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

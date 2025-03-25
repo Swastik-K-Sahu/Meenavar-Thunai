@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:meenavar_thunai/presentation/views/map/map_screen.dart';
 import 'package:provider/provider.dart';
-// import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
-import '../../../core/services/connectivity_service.dart';
-// import '../../../core/widgets/app_button.dart';
-import '../../../core/widgets/offline_indicator.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_styles.dart';
 import '../../viewmodels/auth_viewmodel.dart';
-// import '../../viewmodels/weather_viewmodel.dart';
-// import '../dashboard/weather_widget.dart';
 import '../dashboard/alerts_widget.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -45,15 +40,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _checkConnectivity();
-  }
-
-  Future<void> _checkConnectivity() async {
-    final connectivityService = Provider.of<ConnectivityService>(
-      context,
-      listen: false,
-    );
-    await connectivityService.isConnected();
   }
 
   Widget _buildQuickActionItem({
@@ -174,248 +160,239 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final authViewModel = Provider.of<AuthViewModel>(context);
-    final connectivityService = Provider.of<ConnectivityService>(context);
-    // final weatherViewModel = Provider.of<WeatherViewModel>(context);
+    final today = DateFormat('EEEE, MMMM d').format(DateTime.now());
+    final user = authViewModel.user;
 
-    return FutureBuilder<bool>(
-      future: connectivityService.isConnected(),
-      builder: (context, snapshot) {
-        final isOffline = !(snapshot.data ?? false);
-        final today = DateFormat('EEEE, MMMM d').format(DateTime.now());
-        final user = authViewModel.user;
-
-        return Scaffold(
-          appBar: AppBar(
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            title: Text(
-              'Coastal Mate',
-              style: AppStyles.titleLarge.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.bold,
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        title: Text(
+          'Coastal Mate',
+          style: AppStyles.titleLarge.copyWith(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notifications_outlined, color: AppColors.textDark),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: CircleAvatar(
+              radius: 16,
+              backgroundColor: AppColors.primaryLight,
+              child: Text(
+                user?.displayName?.substring(0, 1).toUpperCase() ?? 'U',
+                style: AppStyles.bodyMedium.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-            actions: [
-              IconButton(
-                icon: Icon(
-                  Icons.notifications_outlined,
-                  color: AppColors.textDark,
-                ),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: CircleAvatar(
-                  radius: 16,
-                  backgroundColor: AppColors.primaryLight,
-                  child: Text(
-                    user?.displayName?.substring(0, 1).toUpperCase() ?? 'U',
-                    style: AppStyles.bodyMedium.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                onPressed: () {},
-              ),
-            ],
+            onPressed: () {},
           ),
-          body: Stack(
-            children: [
-              // Main content
-              SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        ],
+      ),
+      body: Stack(
+        children: [
+          // Main content
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Greeting section
+                Row(
                   children: [
-                    // Greeting section
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Welcome${user != null ? ', ${user.displayName}' : ''}',
-                                style: AppStyles.headlineSmall.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                today,
-                                style: AppStyles.bodyMedium.copyWith(
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (isOffline) const OfflineIndicator(),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Weather section
-                    // const WeatherWidget(),
-                    // const SizedBox(height: 24),
-
-                    // Important alerts
-                    const AlertsWidget(),
-                    const SizedBox(height: 24),
-
-                    // Quick actions
-                    Text(
-                      'Quick Actions',
-                      style: AppStyles.titleMedium.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        _buildQuickActionItem(
-                          icon: Icons.map_outlined,
-                          label: 'Maps',
-                          color: Colors.blue[700]!,
-                          onTap: () {},
-                        ),
-                        _buildQuickActionItem(
-                          icon: Icons.add_a_photo_outlined,
-                          label: 'Report',
-                          color: Colors.green[700]!,
-                          onTap: () {},
-                        ),
-                        _buildQuickActionItem(
-                          icon: Icons.cloud_download_outlined,
-                          label: 'Offline',
-                          color: Colors.orange[700]!,
-                          onTap: () {},
-                        ),
-                        _buildQuickActionItem(
-                          icon: Icons.help_outline,
-                          label: 'Help',
-                          color: Colors.purple[700]!,
-                          onTap: () {},
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Features carousel
-                    Text(
-                      'App Features',
-                      style: AppStyles.titleMedium.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildFeaturesCarousel(),
-                    const SizedBox(height: 24),
-
-                    // Local fishing regulations
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.info_outline,
-                                color: AppColors.primary,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Local Fishing Regulations',
-                                style: AppStyles.titleMedium.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
                           Text(
-                            'Always check local regulations before fishing.',
-                            style: AppStyles.bodyMedium,
+                            'Welcome${user != null ? ', ${user.displayName}' : ''}',
+                            style: AppStyles.headlineSmall.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            today,
+                            style: AppStyles.bodyMedium.copyWith(
+                              color: Colors.grey[600],
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(
-                      height: 80,
-                    ), // Bottom spacing for FAB and navigation
+                    // Removed offline indicator
                   ],
                 ),
-              ),
+                const SizedBox(height: 24),
 
-              // Floating action button for emergency
-              Positioned(
-                right: 16,
-                bottom: 80,
-                child: FloatingActionButton(
-                  backgroundColor: Colors.red,
-                  child: const Icon(Icons.sos_outlined),
-                  onPressed: () {},
-                ),
-              ),
-            ],
-          ),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            selectedItemColor: AppColors.primary,
-            unselectedItemColor: Colors.grey,
-            type: BottomNavigationBarType.fixed,
-            onTap: (index) {
-              // Only update if the index is 0 (home)
-              // Other tabs not implemented
-              if (index == 0) {
-                setState(() {
-                  _currentIndex = index;
-                });
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('This feature is coming soon!'),
-                    duration: Duration(seconds: 1),
+                // Important alerts
+                const AlertsWidget(),
+                const SizedBox(height: 24),
+
+                // Quick actions
+                Text(
+                  'Quick Actions',
+                  style: AppStyles.titleMedium.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
-                );
-              }
-            },
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home_outlined),
-                activeIcon: Icon(Icons.home),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.map_outlined),
-                activeIcon: Icon(Icons.map),
-                label: 'Map',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.add_circle_outline),
-                activeIcon: Icon(Icons.add_circle),
-                label: 'Report',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline),
-                activeIcon: Icon(Icons.person),
-                label: 'Profile',
-              ),
-            ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    _buildQuickActionItem(
+                      icon: Icons.map_outlined,
+                      label: 'Maps',
+                      color: Colors.blue[700]!,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MapsScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildQuickActionItem(
+                      icon: Icons.add_a_photo_outlined,
+                      label: 'Report',
+                      color: Colors.green[700]!,
+                      onTap: () {},
+                    ),
+                    _buildQuickActionItem(
+                      icon: Icons.cloud_download_outlined,
+                      label: 'Offline',
+                      color: Colors.orange[700]!,
+                      onTap: () {},
+                    ),
+                    _buildQuickActionItem(
+                      icon: Icons.help_outline,
+                      label: 'Help',
+                      color: Colors.purple[700]!,
+                      onTap: () {},
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // Features carousel
+                Text(
+                  'App Features',
+                  style: AppStyles.titleMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildFeaturesCarousel(),
+                const SizedBox(height: 24),
+
+                // Local fishing regulations
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.info_outline, color: AppColors.primary),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Local Fishing Regulations',
+                            style: AppStyles.titleMedium.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Always check local regulations before fishing.',
+                        style: AppStyles.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 80,
+                ), // Bottom spacing for FAB and navigation
+              ],
+            ),
           ),
-        );
-      },
+
+          // Floating action button for emergency
+          Positioned(
+            right: 16,
+            bottom: 80,
+            child: FloatingActionButton(
+              backgroundColor: Colors.red,
+              child: const Icon(Icons.sos_outlined),
+              onPressed: () {},
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
+        onTap: (index) {
+          if (index == 0) {
+            setState(() {
+              _currentIndex = index;
+            });
+          } else if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const MapsScreen()),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('This feature is coming soon!'),
+                duration: Duration(seconds: 1),
+              ),
+            );
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map_outlined),
+            activeIcon: Icon(Icons.map),
+            label: 'Map',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add_circle_outline),
+            activeIcon: Icon(Icons.add_circle),
+            label: 'Report',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
     );
   }
 }

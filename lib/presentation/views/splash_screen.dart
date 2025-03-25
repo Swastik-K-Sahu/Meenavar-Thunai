@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
 import '../../../app/routes.dart';
-import '../../../core/services/connectivity_service.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_styles.dart';
 import '../viewmodels/auth_viewmodel.dart';
@@ -17,7 +16,6 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-  bool _isConnected = true;
 
   @override
   void initState() {
@@ -27,17 +25,7 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(seconds: 3),
     );
 
-    _checkConnectivity();
     _navigateToNextScreen();
-  }
-
-  Future<void> _checkConnectivity() async {
-    final connectivityService = Provider.of<ConnectivityService>(
-      context,
-      listen: false,
-    );
-    _isConnected = await connectivityService.isConnected();
-    setState(() {});
   }
 
   Future<void> _navigateToNextScreen() async {
@@ -115,32 +103,7 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
               const Spacer(),
-              // Connectivity status
-              if (!_isConnected)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 8,
-                    horizontal: 16,
-                  ),
-                  margin: const EdgeInsets.only(bottom: 24),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.wifi_off, color: Colors.orange),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Offline Mode Enabled',
-                        style: AppStyles.bodyMedium.copyWith(
-                          color: Colors.orange[800],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              // Removed connectivity status widget
               // Loading indicator
               Padding(
                 padding: const EdgeInsets.only(bottom: 32.0),
