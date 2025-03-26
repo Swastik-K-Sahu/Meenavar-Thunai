@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:meenavar_thunai/presentation/views/map/map_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_styles.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../dashboard/alerts_widget.dart';
+import '../map/map_screen.dart';
+import '../fish_catch_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -16,146 +17,6 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
-  final List<String> _featureImages = [
-    'assets/images/map_feature.jpg',
-    'assets/images/weather_feature.jpg',
-    'assets/images/catch_feature.jpg',
-    'assets/images/offline_feature.jpg',
-  ];
-
-  final List<String> _featureTitles = [
-    'Interactive Maps',
-    'Weather Forecast',
-    'Catch Reports',
-    'Offline Mode',
-  ];
-
-  final List<String> _featureDescriptions = [
-    'Navigate with precision using our detailed coastal maps',
-    'Stay ahead with real-time weather updates for your location',
-    'Track and log your catches with our easy reporting system',
-    'Access essential features even without internet connection',
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  Widget _buildQuickActionItem({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 28),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: AppStyles.bodySmall.copyWith(fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFeaturesCarousel() {
-    return SizedBox(
-      height: 240,
-      child: PageView.builder(
-        itemCount: _featureImages.length,
-        onPageChanged: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        itemBuilder: (context, index) {
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Stack(
-              children: [
-                // Feature image
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Image.asset(
-                    _featureImages[index],
-                    height: 240,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                // Gradient overlay
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.7),
-                      ],
-                    ),
-                  ),
-                ),
-                // Text content
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _featureTitles[index],
-                          style: AppStyles.titleMedium.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _featureDescriptions[index],
-                          style: AppStyles.bodyMedium.copyWith(
-                            color: Colors.white.withOpacity(0.9),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -195,156 +56,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          // Main content
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                // Greeting section
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Welcome${user != null ? ', ${user.displayName}' : ''}',
-                            style: AppStyles.headlineSmall.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            today,
-                            style: AppStyles.bodyMedium.copyWith(
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Removed offline indicator
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Important alerts
-                const AlertsWidget(),
-                const SizedBox(height: 24),
-
-                // Quick actions
-                Text(
-                  'Quick Actions',
-                  style: AppStyles.titleMedium.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    _buildQuickActionItem(
-                      icon: Icons.map_outlined,
-                      label: 'Maps',
-                      color: Colors.blue[700]!,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const MapsScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildQuickActionItem(
-                      icon: Icons.add_a_photo_outlined,
-                      label: 'Report',
-                      color: Colors.green[700]!,
-                      onTap: () {},
-                    ),
-                    _buildQuickActionItem(
-                      icon: Icons.cloud_download_outlined,
-                      label: 'Offline',
-                      color: Colors.orange[700]!,
-                      onTap: () {},
-                    ),
-                    _buildQuickActionItem(
-                      icon: Icons.help_outline,
-                      label: 'Help',
-                      color: Colors.purple[700]!,
-                      onTap: () {},
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Features carousel
-                Text(
-                  'App Features',
-                  style: AppStyles.titleMedium.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _buildFeaturesCarousel(),
-                const SizedBox(height: 24),
-
-                // Local fishing regulations
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Icon(Icons.info_outline, color: AppColors.primary),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Local Fishing Regulations',
-                            style: AppStyles.titleMedium.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
                       Text(
-                        'Always check local regulations before fishing.',
-                        style: AppStyles.bodyMedium,
+                        'Welcome${user != null ? ', ${user.displayName}' : ''}',
+                        style: AppStyles.headlineSmall.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        today,
+                        style: AppStyles.bodyMedium.copyWith(
+                          color: Colors.grey[600],
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(
-                  height: 80,
-                ), // Bottom spacing for FAB and navigation
               ],
             ),
-          ),
-
-          // Floating action button for emergency
-          Positioned(
-            right: 16,
-            bottom: 80,
-            child: FloatingActionButton(
-              backgroundColor: Colors.red,
-              child: const Icon(Icons.sos_outlined),
-              onPressed: () {},
-            ),
-          ),
-        ],
+            const SizedBox(height: 24),
+            const AlertsWidget(),
+            const SizedBox(height: 24),
+            _buildFishingBanIndicator(),
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
@@ -352,21 +98,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
         onTap: (index) {
-          if (index == 0) {
-            setState(() {
-              _currentIndex = index;
-            });
-          } else if (index == 1) {
+          setState(() {
+            _currentIndex = index;
+          });
+          if (index == 1) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const MapsScreen()),
             );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('This feature is coming soon!'),
-                duration: Duration(seconds: 1),
-              ),
+          } else if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FishCatchScreen()),
             );
           }
         },
@@ -390,6 +133,64 @@ class _DashboardScreenState extends State<DashboardScreen> {
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),
             label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFishingBanIndicator() {
+    DateTime startDate = DateTime(DateTime.now().year, 4, 15);
+    DateTime endDate = DateTime(DateTime.now().year, 7, 15);
+    DateTime now = DateTime.now();
+
+    int remainingDays = 0;
+    int totalDays = endDate.difference(startDate).inDays;
+    double progress = 0.0;
+
+    if (now.isBefore(startDate)) {
+      remainingDays = totalDays;
+      progress = 0.0;
+    } else if (now.isAfter(endDate)) {
+      remainingDays = 0;
+      progress = 1.0;
+    } else {
+      remainingDays = endDate.difference(now).inDays;
+      progress = (totalDays - remainingDays) / totalDays;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.primaryLight,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Fishing Ban Period',
+            style: AppStyles.titleMedium.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Annual Conservation Period: 15 Apr - 15 Jul',
+            style: AppStyles.bodyMedium.copyWith(color: AppColors.textDark),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$remainingDays days remaining',
+            style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.grey[300],
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+              minHeight: 10,
+            ),
           ),
         ],
       ),

@@ -9,11 +9,10 @@ import '../theme/app_themes.dart';
 import '/presentation/viewmodels/auth_viewmodel.dart';
 import '/presentation/views/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
-
+import '/presentation/viewmodels/fish_catch_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
 
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
@@ -39,6 +38,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => locator<AuthViewModel>()),
         ChangeNotifierProvider(create: (_) => MapsViewModel()),
+        ChangeNotifierProvider(create: (context) => FishCatchViewModel()),
       ],
       child: MaterialApp(
         title: 'Meenavar-Thunai',
