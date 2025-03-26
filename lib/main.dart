@@ -9,10 +9,11 @@ import '../theme/app_themes.dart';
 import '/presentation/viewmodels/auth_viewmodel.dart';
 import '/presentation/views/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
 
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
@@ -26,8 +27,6 @@ void main() async {
   // Setup service locator
   await setupLocator();
 
-  // Load .env file for API keys
-  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 

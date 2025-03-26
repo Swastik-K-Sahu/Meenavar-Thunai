@@ -8,6 +8,7 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+
 android {
     namespace = "com.example.meenavar_thunai"
     compileSdk = 35
@@ -23,8 +24,6 @@ android {
     }
 
     defaultConfig {
-        def apiKey = project.hasProperty('API_KEY') ? project.API_KEY : ""
-        manifestPlaceholders = [API_KEY: apiKey]
 
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.meenavar_thunai"
