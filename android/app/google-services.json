@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "183498713374",
+    "project_id": "sol-challenge",
+    "storage_bucket": "sol-challenge.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:183498713374:android:ec58e95ab9a30b0a62410f",
+        "android_client_info": {
+          "package_name": "com.example.meenavar_thunai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6V8LHB9vQ7RMS8nhE7gZ38SIgFu_JuZ8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
