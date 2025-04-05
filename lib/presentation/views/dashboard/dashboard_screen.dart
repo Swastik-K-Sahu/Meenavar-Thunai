@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_styles.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../dashboard/alerts_widget.dart';
 import '../map/map_screen.dart';
-import '../fish_catch_screen.dart';
+import '../catch_log/fish_catch_screen.dart';
+import '../../../core/widgets/fishing_ban_indicator.dart';
+import '../../../core/services/fishing_ban_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -23,6 +26,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final authViewModel = Provider.of<AuthViewModel>(context);
     final today = DateFormat('EEEE, MMMM d').format(DateTime.now());
     final user = authViewModel.user;
+    final isFishingBanActive = FishingBanService.isBanActive();
 
     return Scaffold(
       appBar: AppBar(
@@ -68,7 +72,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Welcome${user != null ? ', ${user.displayName}' : ''}',
+                        'Welcome${user?.displayName != null ? ', ${user!.displayName}' : ''}',
                         style: AppStyles.headlineSmall.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -87,7 +91,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 24),
             const AlertsWidget(),
             const SizedBox(height: 24),
-            _buildFishingBanIndicator(),
+            const FishingBanIndicator(),
             const SizedBox(height: 24),
           ],
         ),
@@ -98,9 +102,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
         onTap: (index) {
+          if (isFishingBanActive && (index == 1 || index == 2)) {
+            _showFishingBanToast();
+            return;
+          }
+
           setState(() {
             _currentIndex = index;
           });
+
           if (index == 1) {
             Navigator.push(
               context,
@@ -113,23 +123,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
             );
           }
         },
-        items: const [
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
             activeIcon: Icon(Icons.home),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.map_outlined),
+            icon: Icon(
+              Icons.map_outlined,
+              color: isFishingBanActive ? Colors.grey.withOpacity(0.5) : null,
+            ),
             activeIcon: Icon(Icons.map),
             label: 'Map',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle_outline),
+            icon: Icon(
+              Icons.add_circle_outline,
+              color: isFishingBanActive ? Colors.grey.withOpacity(0.5) : null,
+            ),
             activeIcon: Icon(Icons.add_circle),
             label: 'Report',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),
             label: 'Profile',
@@ -139,61 +155,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildFishingBanIndicator() {
-    DateTime startDate = DateTime(DateTime.now().year, 4, 15);
-    DateTime endDate = DateTime(DateTime.now().year, 7, 15);
-    DateTime now = DateTime.now();
-
-    int remainingDays = 0;
-    int totalDays = endDate.difference(startDate).inDays;
-    double progress = 0.0;
-
-    if (now.isBefore(startDate)) {
-      remainingDays = totalDays;
-      progress = 0.0;
-    } else if (now.isAfter(endDate)) {
-      remainingDays = 0;
-      progress = 1.0;
-    } else {
-      remainingDays = endDate.difference(now).inDays;
-      progress = (totalDays - remainingDays) / totalDays;
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.primaryLight,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Fishing Ban Period',
-            style: AppStyles.titleMedium.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Annual Conservation Period: 15 Apr - 15 Jul',
-            style: AppStyles.bodyMedium.copyWith(color: AppColors.textDark),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '$remainingDays days remaining',
-            style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
-          ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Colors.grey[300],
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.blueAccent),
-              minHeight: 10,
-            ),
-          ),
-        ],
-      ),
+  void _showFishingBanToast() {
+    Fluttertoast.showToast(
+      msg: "Fishing Ban Period: Feature Disabled",
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 3,
+      backgroundColor: AppColors.error,
+      textColor: Colors.white,
     );
   }
 }

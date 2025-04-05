@@ -20,17 +20,15 @@ class _MapsScreenState extends State<MapsScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final mapsViewModel = Provider.of<MapsViewModel>(context, listen: false);
-      mapsViewModel.initializeLocation();
-
-      // Start periodic border proximity checks
-      _startBorderProximityMonitoring();
+      mapsViewModel.loadEEZData().then((_) {
+        mapsViewModel.initializeLocation();
+        _startBorderProximityMonitoring();
+      });
     });
   }
 
   void _startBorderProximityMonitoring() {
     final mapsViewModel = Provider.of<MapsViewModel>(context, listen: false);
-
-    // Check border proximity every 30 seconds
     Stream.periodic(const Duration(seconds: 30)).listen((_) {
       if (mounted) {
         mapsViewModel.checkBorderProximity();
@@ -62,29 +60,25 @@ class _MapsScreenState extends State<MapsScreen> {
       ),
       body: Stack(
         children: [
-          // Google Map
           Consumer<MapsViewModel>(
             builder: (context, mapsViewModel, child) {
               if (mapsViewModel.currentLocation == null) {
                 return const Center(child: CircularProgressIndicator());
               }
-
               return GoogleMap(
                 mapType: mapsViewModel.mapType,
                 initialCameraPosition: CameraPosition(
                   target: mapsViewModel.currentLocation!,
                   zoom: 14.0,
                 ),
+                markers: mapsViewModel.markers,
+                polylines: mapsViewModel.eezPolylines,
                 onMapCreated: mapsViewModel.onMapCreated,
                 myLocationEnabled: true,
                 myLocationButtonEnabled: true,
-                markers: mapsViewModel.markers,
-                polylines: _createBorderPolylines(),
               );
             },
           ),
-
-          // Border Proximity Warning
           Positioned(
             top: 0,
             left: 0,
@@ -95,7 +89,6 @@ class _MapsScreenState extends State<MapsScreen> {
                   if (!mapsViewModel.isBorderProximityWarningActive) {
                     return const SizedBox.shrink();
                   }
-
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     margin: const EdgeInsets.all(16),
@@ -144,16 +137,6 @@ class _MapsScreenState extends State<MapsScreen> {
                             ],
                           ),
                         ),
-                        IconButton(
-                          icon: Icon(Icons.close, color: Colors.red.shade800),
-                          onPressed: () {
-                            final mapsViewModel = Provider.of<MapsViewModel>(
-                              context,
-                              listen: false,
-                            );
-                            mapsViewModel.checkBorderProximity();
-                          },
-                        ),
                       ],
                     ),
                   );
@@ -176,17 +159,6 @@ class _MapsScreenState extends State<MapsScreen> {
         },
       ),
     );
-  }
-
-  Set<Polyline> _createBorderPolylines() {
-    return MapsViewModel.tamilNaduMaritimeBorders.map((border) {
-      return Polyline(
-        polylineId: PolylineId('border_${border.hashCode}'),
-        color: Colors.red.withOpacity(0.5),
-        width: 3,
-        points: border,
-      );
-    }).toSet();
   }
 
   void _showMapTypeDialog(BuildContext context) {
@@ -224,11 +196,6 @@ class _MapsScreenState extends State<MapsScreen> {
         );
       },
     );
-  }
-
-  void _changeMapType(MapType mapType) {
-    final mapsViewModel = Provider.of<MapsViewModel>(context, listen: false);
-    mapsViewModel.changeMapType(mapType);
   }
 
   void _showAddMarkerDialog(BuildContext context, MapsViewModel mapsViewModel) {
@@ -275,5 +242,10 @@ class _MapsScreenState extends State<MapsScreen> {
         );
       },
     );
+  }
+
+  void _changeMapType(MapType mapType) {
+    final mapsViewModel = Provider.of<MapsViewModel>(context, listen: false);
+    mapsViewModel.changeMapType(mapType);
   }
 }

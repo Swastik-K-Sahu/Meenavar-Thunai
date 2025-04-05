@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/fish_catch_model.dart';
-import '../../services/firebase_service.dart';
+import '../../core/services/firebase_service.dart';
 import 'package:uuid/uuid.dart';
 
 class FishCatchViewModel extends ChangeNotifier {

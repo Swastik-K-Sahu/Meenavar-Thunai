@@ -240,7 +240,11 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           // Loading overlay
-          if (authViewModel.isLoading) const LoadingWidget(),
+          if (authViewModel.isLoading)
+            Container(
+              color: AppColors.overlay,
+              child: const Center(child: LoadingWidget()),
+            ),
         ],
       ),
     );

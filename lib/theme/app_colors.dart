@@ -13,7 +13,7 @@ class AppColors {
 
   // Background colors
   static const Color background = Color(0xFFF5F7FA);
-  static const Color surface = Colors.white;
+  static const Color backgroundWhite = Colors.white;
   static const Color surfaceVariant = Color(0xFFEEF2F6);
   static const Color card = Colors.white;
 
@@ -27,8 +27,11 @@ class AppColors {
 
   // Utility colors
   static const Color error = Color(0xFFD32F2F);
+  static const Color errorLight = Color(0xFFFDE7E0);
   static const Color success = Color(0xFF388E3C);
+  static const Color successLight = Color(0xFFDFF6DD);
   static const Color warning = Color(0xFFFFA000);
+  static const Color warningLight = Color(0xFFFFF4CE);
   static const Color info = Color(0xFF1976D2);
 
   // Border & divider
@@ -54,6 +57,8 @@ class AppColors {
   // Overlay and shadow
   static const Color shadow = Color.fromRGBO(0, 0, 0, 0.1);
   static const Color overlay = Color.fromRGBO(0, 0, 0, 0.5);
+
+  static const Color maritimeBoundaryColor = Color.fromARGB(255, 182, 6, 6);
 
   // Chart colors
   static const List<Color> chartColors = [

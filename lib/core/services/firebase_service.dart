@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/fish_catch_model.dart';
+import '../../models/fish_catch_model.dart';
 
 class FirebaseService {
   final CollectionReference catchReportCollection = FirebaseFirestore.instance

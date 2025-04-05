@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:meenavar_thunai/firebase_options.dart';
+import 'package:meenavar_thunai/core/utils/firebase_options.dart';
 import 'package:meenavar_thunai/presentation/viewmodels/maps_viewmodel.dart';
 import 'package:provider/provider.dart';
 import '../app/routes.dart';

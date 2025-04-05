@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-import '../viewmodels/fish_catch_viewmodel.dart';
+import '../../viewmodels/fish_catch_viewmodel.dart';
 
 class FishCatchScreen extends StatefulWidget {
   const FishCatchScreen({super.key});

@@ -11,7 +11,7 @@ class AppThemes {
       colorScheme: ColorScheme.light(
         primary: AppColors.primary,
         secondary: AppColors.secondary,
-        surface: AppColors.surface,
+        surface: AppColors.backgroundWhite,
         error: AppColors.error,
       ),
       appBarTheme: AppBarTheme(
@@ -49,7 +49,7 @@ class AppThemes {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: AppColors.backgroundWhite,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 16,
@@ -90,7 +90,7 @@ class AppThemes {
         space: 1,
       ),
       cardTheme: CardTheme(
-        color: AppColors.surface,
+        color: AppColors.backgroundWhite,
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(8),
