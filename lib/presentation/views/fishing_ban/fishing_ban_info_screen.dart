@@ -12,11 +12,11 @@ class FishingBanInfoScreen extends StatelessWidget {
         title: Text(
           'Fishing Ban Information',
           style: AppStyles.titleMedium.copyWith(
-            color: AppColors.textDark,
+            color: AppColors.lightGrey,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
         elevation: 0,
         iconTheme: IconThemeData(color: AppColors.textDark),
       ),
@@ -37,14 +37,14 @@ class FishingBanInfoScreen extends StatelessWidget {
               title: 'Conservation Efforts',
               description:
                   'Fishing bans during breeding seasons allow fish populations to replenish naturally. This ensures sustainable fishing for future generations.',
-              imagePath: 'assets/images/conservation.jpg',
+              imagePath: 'assets/images/conservation_effect.png',
             ),
             const SizedBox(height: 24),
             _buildInfoSection(
               title: 'Effects of Overfishing',
               description:
                   'Overfishing disrupts marine ecosystems, reduces biodiversity, and threatens food security for coastal communities that depend on fishing for livelihood.',
-              imagePath: 'assets/images/overfishing.jpg',
+              imagePath: 'assets/images/effect_overfishing.jpg',
             ),
             const SizedBox(height: 24),
             Text(
@@ -79,7 +79,7 @@ class FishingBanInfoScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.primaryLight,
+                color: AppColors.backgroundWhite,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.primary.withOpacity(0.3)),
               ),

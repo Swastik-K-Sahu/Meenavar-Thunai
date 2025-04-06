@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart';
 import 'package:meenavar_thunai/theme/app_colors.dart';
+import 'package:vibration/vibration.dart';
 
 class MapsViewModel extends ChangeNotifier {
   GoogleMapController? _mapController;
@@ -95,8 +96,9 @@ class MapsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void checkBorderProximity() {
+  void checkBorderProximity() async {
     if (_currentLocation == null || _eezBoundaries.isEmpty) return;
+
     double minDistance = double.infinity;
     for (var border in _eezBoundaries) {
       double distance = _calculateMinDistanceToBorder(
@@ -105,13 +107,20 @@ class MapsViewModel extends ChangeNotifier {
       );
       minDistance = min(minDistance, distance);
     }
-    _isBorderProximityWarningActive = minDistance <= _proximityThreshold;
-    _currentBorderDistance = minDistance;
-    if (_isBorderProximityWarningActive) {
+
+    bool isClose = minDistance <= _proximityThreshold;
+
+    if (isClose && !_isBorderProximityWarningActive) {
+      if (await Vibration.hasVibrator() ?? false) {
+        Vibration.vibrate(duration: 5000);
+      }
       print(
         'Warning! You are near the international maritime boundary: $minDistance km away.',
       );
     }
+
+    _isBorderProximityWarningActive = isClose;
+    _currentBorderDistance = minDistance;
     notifyListeners();
   }
 

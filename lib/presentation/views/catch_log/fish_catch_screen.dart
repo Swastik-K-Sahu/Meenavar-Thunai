@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import '../../viewmodels/fish_catch_viewmodel.dart';
+import '../../../core/widgets/sustainability_alert.dart';
+import '../../../core/widgets/catch_detail_card.dart';
 
 class FishCatchScreen extends StatefulWidget {
   const FishCatchScreen({super.key});
@@ -13,89 +15,228 @@ class FishCatchScreen extends StatefulWidget {
 
 class _FishCatchScreenState extends State<FishCatchScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _fishTypeController = TextEditingController();
-  final TextEditingController _weightController = TextEditingController();
+  String? _selectedFishSpecies;
   final TextEditingController _quantityController = TextEditingController();
+  String? _selectedNetType;
+
+  @override
+  void initState() {
+    super.initState();
+    // Prefetch data when screen loads
+    final User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Provider.of<FishCatchViewModel>(
+          context,
+          listen: false,
+        ).loadCatches(currentUser.uid);
+      });
+    }
+  }
 
   void _submitCatch(BuildContext context) async {
     final User? currentUser = FirebaseAuth.instance.currentUser;
 
     if (currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please log in to record a catch')),
+        const SnackBar(content: Text('Please log in to record a catch')),
       );
       return;
     }
 
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState!.validate() &&
+        _selectedFishSpecies != null &&
+        _selectedNetType != null) {
       final viewModel = Provider.of<FishCatchViewModel>(context, listen: false);
-      String fishType = _fishTypeController.text;
-      double weight = double.parse(_weightController.text);
-      int quantity = int.parse(_quantityController.text);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Logging catch, please wait...')),
+      );
+      try {
+        // Add catch
+        FishCatchResult result = await viewModel.addCatch(
+          userId: currentUser.uid,
+          fishSpecies: _selectedFishSpecies!,
+          quantityInQuintal: double.parse(_quantityController.text),
+          netType: _selectedNetType!,
+        );
+        ScaffoldMessenger.of(context).clearSnackBars();
 
-      viewModel.addCatch(currentUser.uid, fishType, weight, quantity);
+        if (result.success) {
+          // Reset form
+          setState(() {
+            _selectedFishSpecies = null;
+            _quantityController.clear();
+            _selectedNetType = null;
+          });
 
-      _fishTypeController.clear();
-      _weightController.clear();
-      _quantityController.clear();
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Catch logged successfully!')));
+          // Show sustainability alert if there are warnings
+          if (result.sustainabilityCheck != null &&
+              result.sustainabilityCheck!.warnings.isNotEmpty) {
+            showDialog(
+              context: context,
+              builder:
+                  (context) => SustainabilityAlertDialog(
+                    sustainabilityCheck: result.sustainabilityCheck!,
+                  ),
+            );
+          } else {
+            // Show success message
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Catch logged successfully! Points awarded: ${result.sustainabilityCheck?.pointsAwarded ?? 0}',
+                ),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } else {
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to log catch: ${result.error}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
   void _showAddCatchDialog(BuildContext context) {
+    final viewModel = Provider.of<FishCatchViewModel>(context, listen: false);
+    setState(() {
+      _selectedFishSpecies = null;
+      _quantityController.clear();
+      _selectedNetType = null;
+    });
     showDialog(
       context: context,
       builder:
-          (context) => AlertDialog(
-            title: Text(
+          (dialogContext) => AlertDialog(
+            title: const Text(
               'Log New Catch',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            content: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildTextField(
-                    _fishTypeController,
-                    'Fish Type',
-                    Icons.anchor,
-                  ),
-                  _buildTextField(
-                    _weightController,
-                    'Weight (kg)',
-                    Icons.scale,
-                    isNumeric: true,
-                  ),
-                  _buildTextField(
-                    _quantityController,
-                    'Quantity',
-                    Icons.format_list_numbered,
-                    isNumeric: true,
-                  ),
-                ],
+            content: SingleChildScrollView(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Fish Species Dropdown
+                    _buildDropdown(
+                      'Fish Species',
+                      Icons.set_meal,
+                      viewModel.fishSpecies,
+                      _selectedFishSpecies,
+                      (value) => setState(() => _selectedFishSpecies = value),
+                    ),
+
+                    // Quantity in Quintal
+                    _buildTextField(
+                      _quantityController,
+                      'Quantity (quintal)',
+                      Icons.scale,
+                      isNumeric: true,
+                    ),
+
+                    // Net Type Dropdown
+                    _buildDropdown(
+                      'Net Type',
+                      Icons.grid_on,
+                      viewModel.netTypes,
+                      _selectedNetType,
+                      (value) => setState(() => _selectedNetType = value),
+                    ),
+
+                    // Date & Time (auto-filled)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_today, color: Colors.grey),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Date & Time: ${DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now())}',
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Cancel', style: TextStyle(color: Colors.red)),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.red),
+                ),
               ),
               ElevatedButton(
                 onPressed: () {
                   _submitCatch(context);
                   Navigator.pop(context);
                 },
-                child: Text('Log Catch'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'Log Catch',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ],
           ),
+    );
+  }
+
+  Widget _buildDropdown(
+    String label,
+    IconData icon,
+    List<String> items,
+    String? selectedValue,
+    Function(String?) onChanged,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: DropdownButtonFormField<String>(
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          filled: true,
+          fillColor: Colors.grey[200],
+        ),
+        value: selectedValue,
+        items:
+            items.map((String value) {
+              return DropdownMenuItem<String>(value: value, child: Text(value));
+            }).toList(),
+        onChanged: onChanged,
+        validator: (value) {
+          if (value == null || value.isEmpty) return 'Please select $label';
+          return null;
+        },
+      ),
     );
   }
 
@@ -131,7 +272,12 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Fish Catch Log')),
+      appBar: AppBar(
+        title: const Text('Fish Catch Log'),
+        elevation: 0,
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+      ),
       body: Consumer<FishCatchViewModel>(
         builder: (context, viewModel, child) {
           return Padding(
@@ -139,49 +285,36 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
             child:
                 viewModel.catches.isEmpty
                     ? Center(
-                      child: Text(
-                        'No catches logged yet!',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.sailing,
+                            size: 80,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'No catches logged yet!',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Tap the + button to record your first catch',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ],
                       ),
                     )
                     : ListView.builder(
                       itemCount: viewModel.catches.length,
                       itemBuilder: (context, index) {
                         final catchData = viewModel.catches[index];
-                        return Card(
-                          margin: EdgeInsets.symmetric(vertical: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 4,
-                          child: ListTile(
-                            leading: Icon(
-                              Icons.anchor,
-                              color: Colors.blueAccent,
-                              size: 32,
-                            ),
-                            title: Text(
-                              catchData.fishType,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            subtitle: Text(
-                              '${catchData.weight} kg | ${catchData.quantity} pcs\n'
-                              '${DateFormat('dd MMM yyyy, hh:mm a').format(catchData.timestamp.toLocal())}',
-                              style: TextStyle(color: Colors.grey[700]),
-                            ),
-                            trailing: Icon(
-                              Icons.check_circle,
-                              color: Colors.green,
-                            ),
-                          ),
-                        );
+                        return CatchDetailCard(catchData: catchData);
                       },
                     ),
           );
@@ -190,8 +323,14 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddCatchDialog(context),
         backgroundColor: Colors.blueAccent,
-        child: Icon(Icons.add, size: 30),
+        child: const Icon(Icons.add, size: 30),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _quantityController.dispose();
+    super.dispose();
   }
 }
