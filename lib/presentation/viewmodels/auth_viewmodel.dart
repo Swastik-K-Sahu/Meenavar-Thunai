@@ -114,12 +114,8 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  // Login with email and password
-  Future<AuthResult> login(
-    String email,
-    String password, {
-    bool rememberMe = false,
-  }) async {
+  // Login with email and password - removed rememberMe parameter
+  Future<AuthResult> login(String email, String password) async {
     try {
       _status = AuthStatus.loading;
       _errorMessage = null;

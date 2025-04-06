@@ -16,4 +16,8 @@ class AppRoutes {
     register: (_) => const RegisterScreen(),
     dashboard: (_) => const DashboardScreen(),
   };
+
+  static void resetToDashboard(BuildContext context) {
+    Navigator.of(context).pushNamedAndRemoveUntil(dashboard, (route) => false);
+  }
 }

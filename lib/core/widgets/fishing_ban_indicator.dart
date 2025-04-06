@@ -15,7 +15,7 @@ class FishingBanIndicator extends StatelessWidget {
     final progress = banStatus.progress;
 
     Color containerColor =
-        isBanActive ? AppColors.errorLight : AppColors.primaryLight;
+        isBanActive ? AppColors.errorLight : AppColors.backgroundWhite;
 
     Color textColor = isBanActive ? AppColors.error : AppColors.primary;
 
@@ -66,7 +66,7 @@ class FishingBanIndicator extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Annual Conservation Period: 15 Mar - 15 Jul',
+              'Annual Conservation Period: 15 Apr - 15 Jul',
               style: AppStyles.bodyMedium.copyWith(
                 color:
                     isBanActive

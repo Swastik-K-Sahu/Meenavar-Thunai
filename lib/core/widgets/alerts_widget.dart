@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../theme/app_styles.dart';
+import '../../theme/app_styles.dart';
 
 class AlertsWidget extends StatelessWidget {
   const AlertsWidget({super.key});

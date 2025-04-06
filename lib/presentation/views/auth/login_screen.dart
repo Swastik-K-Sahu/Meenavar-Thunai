@@ -20,20 +20,12 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
-  bool _rememberMe = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
-  }
-
-  void _togglePasswordVisibility() {
-    setState(() {
-      _obscurePassword = !_obscurePassword;
-    });
   }
 
   Future<void> _login() async {
@@ -43,7 +35,6 @@ class _LoginScreenState extends State<LoginScreen> {
       final result = await authViewModel.login(
         _emailController.text.trim(),
         _passwordController.text,
-        rememberMe: _rememberMe,
       );
 
       if (!mounted) return;
@@ -143,47 +134,16 @@ class _LoginScreenState extends State<LoginScreen> {
                             labelText: 'Password',
                             hintText: 'Enter your password',
                             prefixIcon: Icons.lock_outline,
-                            obscureText: _obscurePassword,
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
-                              ),
-                              onPressed: _togglePasswordVisibility,
-                            ),
+                            obscureText: true,
                             validator:
                                 (value) =>
                                     ValidatorUtils.validatePassword(value),
                           ),
                           const SizedBox(height: 16),
-                          // Remember me & Forgot password
+
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              // Remember me
-                              Row(
-                                children: [
-                                  SizedBox(
-                                    height: 24,
-                                    width: 24,
-                                    child: Checkbox(
-                                      value: _rememberMe,
-                                      activeColor: AppColors.primary,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _rememberMe = value ?? false;
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Remember me',
-                                    style: AppStyles.bodyMedium,
-                                  ),
-                                ],
-                              ),
-                              const Spacer(),
                               // Forgot password
                               TextButton(
                                 onPressed: () {},
