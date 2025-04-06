@@ -59,7 +59,7 @@ class AppColors {
   static const Color overlay = Color.fromRGBO(0, 0, 0, 0.5);
 
   static const Color maritimeBoundaryColor = Color.fromARGB(255, 182, 6, 6);
-
+  static const Color accent = Color(0xFF26A69A);
   // Chart colors
   static const List<Color> chartColors = [
     Color(0xFF0277BD),

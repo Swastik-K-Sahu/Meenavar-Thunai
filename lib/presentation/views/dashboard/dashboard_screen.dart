@@ -5,11 +5,13 @@ import 'package:fluttertoast/fluttertoast.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_styles.dart';
 import '../../viewmodels/auth_viewmodel.dart';
-import '../dashboard/alerts_widget.dart';
+import '../../../core/widgets/alerts_widget.dart';
 import '../map/map_screen.dart';
 import '../catch_log/fish_catch_screen.dart';
 import '../../../core/widgets/fishing_ban_indicator.dart';
 import '../../../core/services/fishing_ban_service.dart';
+import '../sustainable_products/sustainable_prod_screen.dart';
+import '../profile/profile_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -56,7 +58,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
+            },
           ),
         ],
       ),
@@ -121,6 +128,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               context,
               MaterialPageRoute(builder: (context) => const FishCatchScreen()),
             );
+          } else if (index == 3) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const SustainableProductsScreen(),
+              ),
+            );
           }
         },
         items: [
@@ -146,9 +160,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             label: 'Report',
           ),
           const BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
+            icon: Icon(Icons.shopping_bag_outlined),
+            activeIcon: Icon(Icons.shopping_bag),
+            label: 'Shop',
           ),
         ],
       ),
