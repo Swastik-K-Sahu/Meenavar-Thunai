@@ -4,7 +4,7 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_styles.dart';
 
 class WeatherWidget extends StatelessWidget {
-  const WeatherWidget({Key? key}) : super(key: key);
+  const WeatherWidget({super.key});
 
   @override
   Widget build(BuildContext context) {

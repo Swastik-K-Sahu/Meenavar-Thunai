@@ -5,7 +5,7 @@ import '../../models/fish_catch_model.dart';
 class CatchDetailCard extends StatelessWidget {
   final FishCatchModel catchData;
 
-  const CatchDetailCard({Key? key, required this.catchData}) : super(key: key);
+  const CatchDetailCard({super.key, required this.catchData});
 
   @override
   Widget build(BuildContext context) {

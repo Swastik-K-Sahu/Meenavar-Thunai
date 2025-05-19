@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class FishingBanService {
   static bool isBanActive() {
     DateTime startDate = DateTime(DateTime.now().year, 4, 15);
@@ -11,7 +9,7 @@ class FishingBanService {
 
   static BanStatus getBanStatus() {
     DateTime startDate = DateTime(DateTime.now().year, 4, 15);
-    DateTime endDate = DateTime(DateTime.now().year, 7, 15);
+    DateTime endDate = DateTime(DateTime.now().year, 5, 15);
     DateTime now = DateTime.now();
 
     int remainingDays = 0;

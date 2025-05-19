@@ -1,4 +1,3 @@
-// lib/views/sustainable_products_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../theme/app_colors.dart';
@@ -8,7 +7,7 @@ import '../../../core/widgets/product_card.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SustainableProductsScreen extends StatelessWidget {
-  const SustainableProductsScreen({Key? key}) : super(key: key);
+  const SustainableProductsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

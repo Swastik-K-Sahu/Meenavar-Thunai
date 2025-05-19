@@ -38,7 +38,7 @@ class FirebaseService {
           .set(fishCatch.toMap());
     } catch (e) {
       print('Error adding fish catch: $e');
-      throw e;
+      rethrow;
     }
   }
 

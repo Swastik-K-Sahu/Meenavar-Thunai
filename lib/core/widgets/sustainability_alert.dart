@@ -4,8 +4,10 @@ import '../../presentation/viewmodels/fish_catch_viewmodel.dart';
 class SustainabilityAlertDialog extends StatelessWidget {
   final SustainabilityCheck sustainabilityCheck;
 
-  const SustainabilityAlertDialog({Key? key, required this.sustainabilityCheck})
-    : super(key: key);
+  const SustainabilityAlertDialog({
+    super.key,
+    required this.sustainabilityCheck,
+  });
 
   @override
   Widget build(BuildContext context) {
