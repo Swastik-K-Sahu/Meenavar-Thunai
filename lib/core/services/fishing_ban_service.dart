@@ -1,7 +1,7 @@
 class FishingBanService {
   static bool isBanActive() {
     DateTime startDate = DateTime(DateTime.now().year, 4, 15);
-    DateTime endDate = DateTime(DateTime.now().year, 7, 15);
+    DateTime endDate = DateTime(DateTime.now().year, 5, 15);
     DateTime now = DateTime.now();
 
     return now.isAfter(startDate) && now.isBefore(endDate);

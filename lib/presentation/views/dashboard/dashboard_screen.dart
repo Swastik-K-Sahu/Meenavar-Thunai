@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:meenavar_thunai/presentation/views/dashboard/weather_widget.dart';
+import 'package:meenavar_thunai/presentation/views/weather/weather_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -126,13 +126,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               return;
             }
 
-            // Always update the current index
             setState(() {
               _currentIndex = index;
             });
 
             if (index == 0) {
-              // Already on dashboard - do nothing
               return;
             } else if (index == 1) {
               Navigator.push(

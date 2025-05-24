@@ -18,7 +18,7 @@ class FishingBanInfoScreen extends StatelessWidget {
         ),
         backgroundColor: AppColors.primary,
         elevation: 0,
-        iconTheme: IconThemeData(color: AppColors.textDark),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
