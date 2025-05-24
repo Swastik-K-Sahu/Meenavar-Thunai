@@ -34,8 +34,9 @@
 
 ## 📲 Getting Started
 - Add your Google Maps API key in android\app\src\main\AndroidManifest.xml to load Maps screen.
+- Add secrets.dart with APIs for weather and ocean data in lib/ .
 ### 🔐 Default Admin Login
 > ⚠️ For testing/demo purposes only
 ```bash
-Email: admin1234@gmail.com  
-Password: Admin@1234
+Email: test1234@gmail.com  
+Password: Test#1234
