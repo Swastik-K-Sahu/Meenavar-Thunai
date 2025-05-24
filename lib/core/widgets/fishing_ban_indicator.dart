@@ -66,7 +66,7 @@ class FishingBanIndicator extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Annual Conservation Period: 15 Apr - 15 Jul',
+              'Annual Conservation Period: 15 Apr - 15 May',
               style: AppStyles.bodyMedium.copyWith(
                 color:
                     isBanActive

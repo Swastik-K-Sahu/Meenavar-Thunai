@@ -41,22 +41,9 @@ class _MapsScreenState extends State<MapsScreen> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.transparent,
-        title: Text(
-          'Coastal Maps',
-          style: AppStyles.titleLarge.copyWith(
-            color: AppColors.primary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.layers_outlined, color: AppColors.textDark),
-            onPressed: () {
-              _showMapTypeDialog(context);
-            },
-          ),
-        ],
+        backgroundColor: AppColors.primary,
+        title: const Text('Coastal Maps'),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: Stack(
         children: [
