@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:meenavar_thunai/core/services/hotspot_prediction_service.dart';
 import 'package:meenavar_thunai/core/utils/firebase_options.dart';
+import 'package:meenavar_thunai/presentation/viewmodels/hotspot_viewmodel.dart';
 import 'package:meenavar_thunai/presentation/viewmodels/maps_viewmodel.dart';
+import 'package:meenavar_thunai/secrets.dart';
 import 'package:provider/provider.dart';
 import '../app/routes.dart';
 import '../app/locator.dart';
@@ -41,6 +44,17 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => MapsViewModel()),
         ChangeNotifierProvider(create: (context) => FishCatchViewModel()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
+        ChangeNotifierProvider(
+          create:
+              (_) => HotspotViewModel(
+                predictionService: HotspotPredictionService(
+                  geminiApiKey:
+                      AppSecrets.geminiApiKey, // Gemini API key from secrets
+                  weatherApiUrl: 'https://api.open-meteo.com/v1/forecast',
+                  oceanApiUrl: 'https://marine-api.open-meteo.com/v1/marine',
+                ),
+              ),
+        ),
       ],
       child: MaterialApp(
         title: 'Meenavar-Thunai',
