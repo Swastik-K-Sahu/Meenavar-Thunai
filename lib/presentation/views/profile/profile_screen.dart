@@ -15,6 +15,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isEnglish = true;
   bool _isLoggingOut = false;
 
+  // Localization strings
+  Map<String, Map<String, String>> get _localizedStrings => {
+    'en': {
+      'myProfile': 'My Profile',
+      'user': 'User',
+      'notSet': 'Not Set',
+      'personalInformation': 'Personal Information',
+      'fullName': 'Full Name',
+      'mobileNumber': 'Mobile Number',
+      'fishingLicenseNumber': 'Fishing License Number',
+      'emergencyContact': 'Emergency Contact',
+      'appSettings': 'App Settings',
+      'language': 'Language',
+      'english': 'English',
+      'tamil': 'தமிழ்',
+      'termsConditions': 'Terms & Conditions',
+      'privacyPolicy': 'Privacy Policy',
+      'aboutCoastalMate': 'About Coastal Mate',
+      'logOut': 'Log Out',
+      'loggingOut': 'Logging Out...',
+      'confirmLogout': 'Confirm Logout',
+      'logoutConfirmation': 'Are you sure you want to log out?',
+      'cancel': 'Cancel',
+      'logout': 'Logout',
+      'failedToLogout': 'Failed to logout',
+    },
+    'ta': {
+      'myProfile': 'என் சுயவிவரம்',
+      'user': 'பயனர்',
+      'notSet': 'அமைக்கப்படவில்லை',
+      'personalInformation': 'தனிப்பட்ட தகவல்',
+      'fullName': 'முழு பெயர்',
+      'mobileNumber': 'மொபைல் எண்',
+      'fishingLicenseNumber': 'மீன்பிடி உரிமம் எண்',
+      'emergencyContact': 'அவசர தொடர்பு',
+      'appSettings': 'ஆப்ஸ் அமைப்புகள்',
+      'language': 'மொழி',
+      'english': 'English',
+      'tamil': 'தமிழ்',
+      'termsConditions': 'விதிமுறைகள் & நிபந்தனைகள்',
+      'privacyPolicy': 'தனியுரிமை கொள்கை',
+      'aboutCoastalMate': 'கடலோர துணை பற்றி',
+      'logOut': 'வெளியேறு',
+      'loggingOut': 'வெளியேறுகிறது...',
+      'confirmLogout': 'வெளியேறுவதை உறுதிப்படுத்தவும்',
+      'logoutConfirmation': 'நீங்கள் நிச்சயமாக வெளியேற விரும்புகிறீர்களா?',
+      'cancel': 'ரத்து செய்',
+      'logout': 'வெளியேறு',
+      'failedToLogout': 'வெளியேற முடியவில்லை',
+    },
+  };
+
+  String _getText(String key) {
+    final lang = _isEnglish ? 'en' : 'ta';
+    return _localizedStrings[lang]?[key] ?? key;
+  }
+
   Future<void> _handleLogout() async {
     final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
 
@@ -28,17 +85,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: const Text('Confirm Logout'),
-            content: const Text('Are you sure you want to log out?'),
+            title: Text(_getText('confirmLogout')),
+            content: Text(_getText('logoutConfirmation')),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
+                child: Text(_getText('cancel')),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
                 style: TextButton.styleFrom(foregroundColor: AppColors.error),
-                child: const Text('Logout'),
+                child: Text(_getText('logout')),
               ),
             ],
           );
@@ -61,7 +118,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to logout: ${e.toString()}'),
+            content: Text('${_getText('failedToLogout')}: ${e.toString()}'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -85,7 +142,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         elevation: 0,
         backgroundColor: Colors.transparent,
         title: Text(
-          'My Profile',
+          _getText('myProfile'),
           style: AppStyles.titleLarge.copyWith(
             color: AppColors.primary,
             fontWeight: FontWeight.bold,
@@ -168,7 +225,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    user?.displayName ?? 'User',
+                    user?.displayName ?? _getText('user'),
                     style: AppStyles.titleLarge.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -184,47 +241,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            _buildSectionTitle('Personal Information'),
+            _buildSectionTitle(_getText('personalInformation')),
             const SizedBox(height: 16),
             _buildInfoCard(
               Icons.person,
-              'Full Name',
-              user?.displayName ?? 'Not Set',
+              _getText('fullName'),
+              user?.displayName ?? _getText('notSet'),
               onTap: () {},
             ),
             _buildInfoCard(
               Icons.phone,
-              'Mobile Number',
+              _getText('mobileNumber'),
               '+91 98765 43210',
               onTap: () {},
             ),
             _buildInfoCard(
               Icons.card_membership,
-              'Fishing License Number',
+              _getText('fishingLicenseNumber'),
               'FL-12345-2025',
               onTap: () {},
             ),
             _buildInfoCard(
               Icons.emergency,
-              'Emergency Contact',
+              _getText('emergencyContact'),
               '+91 98765 12345',
               onTap: () {},
             ),
             const SizedBox(height: 32),
-            _buildSectionTitle('App Settings'),
+            _buildSectionTitle(_getText('appSettings')),
             const SizedBox(height: 16),
             _buildLanguageSelector(),
             _buildSettingsCard(
               Icons.description,
-              'Terms & Conditions',
+              _getText('termsConditions'),
               onTap: () {},
             ),
             _buildSettingsCard(
               Icons.privacy_tip,
-              'Privacy Policy',
+              _getText('privacyPolicy'),
               onTap: () {},
             ),
-            _buildSettingsCard(Icons.info, 'About Coastal Mate', onTap: () {}),
+            _buildSettingsCard(
+              Icons.info,
+              _getText('aboutCoastalMate'),
+              onTap: () {},
+            ),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
@@ -244,7 +305,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         )
                         : const Icon(Icons.logout, color: Colors.white),
                 label: Text(
-                  _isLoggingOut ? 'Logging Out...' : 'Log Out',
+                  _isLoggingOut ? _getText('loggingOut') : _getText('logOut'),
                   style: AppStyles.titleLarge.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -347,14 +408,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Language',
+                    _getText('language'),
                     style: AppStyles.bodyMedium.copyWith(
                       color: Colors.grey[600],
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _isEnglish ? 'English' : 'தமிழ்',
+                    _isEnglish ? _getText('english') : _getText('tamil'),
                     style: AppStyles.bodyLarge.copyWith(
                       fontWeight: FontWeight.w500,
                     ),
