@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:meenavar_thunai/secrets.dart';
@@ -431,7 +432,7 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.min, // Keep this as min
         children: [
           // Handle bar
           Container(
@@ -443,143 +444,147 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-
-          // Content
-          Padding(
-            padding: EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Row(
+          // Wrap the content with SingleChildScrollView
+          Expanded(
+            // Use Expanded to give the SingleChildScrollView flexible space
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Header
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: _getHotspotColor(
+                              hotspot.probability,
+                            ).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.place,
+                            color: _getHotspotColor(hotspot.probability),
+                            size: 24,
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Fishing Hotspot',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                '${(hotspot.probability * 100).toInt()}% Success Probability',
+                                style: TextStyle(
+                                  color: _getHotspotColor(hotspot.probability),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: 20),
+
+                    // Description
+                    _buildInfoSection(
+                      'Description',
+                      Icons.info_outline,
+                      hotspot.description,
+                    ),
+
+                    SizedBox(height: 16),
+
+                    // Weather Conditions
+                    _buildInfoSection(
+                      'Weather Conditions',
+                      Icons.wb_sunny,
+                      hotspot.weatherConditions,
+                    ),
+
+                    SizedBox(height: 16),
+
+                    // Best Time to Fish
+                    _buildInfoSection(
+                      'Best Time to Fish',
+                      Icons.access_time,
+                      hotspot.bestTimeToFish,
+                    ),
+
+                    SizedBox(height: 16),
+
+                    // Probable Species
+                    if (hotspot.probableSpecies.isNotEmpty) ...[
+                      _buildListSection(
+                        'Probable Species',
+                        FontAwesomeIcons.fish,
+                        hotspot.probableSpecies,
+                        Colors.blue,
+                      ),
+                      SizedBox(height: 16),
+                    ],
+
+                    // Precautions
+                    if (hotspot.precautions.isNotEmpty) ...[
+                      _buildListSection(
+                        'Precautions',
+                        Icons.warning,
+                        hotspot.precautions,
+                        Colors.orange,
+                      ),
+                      SizedBox(height: 20),
+                    ],
+
+                    // Navigate Button
                     Container(
-                      padding: EdgeInsets.all(12),
+                      width: double.infinity,
+                      height: 50,
                       decoration: BoxDecoration(
-                        color: _getHotspotColor(
-                          hotspot.probability,
-                        ).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        gradient: LinearGradient(
+                          colors: [Colors.blue[400]!, Colors.blue[600]!],
+                        ),
+                        borderRadius: BorderRadius.circular(25),
                       ),
-                      child: Icon(
-                        Icons.place,
-                        color: _getHotspotColor(hotspot.probability),
-                        size: 24,
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Fishing Hotspot',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(25),
+                          onTap: () {
+                            Navigator.pop(context);
+                            _mapController?.animateCamera(
+                              CameraUpdate.newLatLngZoom(
+                                LatLng(hotspot.latitude, hotspot.longitude),
+                                15,
+                              ),
+                            );
+                          },
+                          child: Center(
+                            child: Text(
+                              'Navigate to Hotspot',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                          Text(
-                            '${(hotspot.probability * 100).toInt()}% Success Probability',
-                            style: TextStyle(
-                              color: _getHotspotColor(hotspot.probability),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: 20),
-
-                // Description
-                _buildInfoSection(
-                  'Description',
-                  Icons.info_outline,
-                  hotspot.description,
-                ),
-
-                SizedBox(height: 16),
-
-                // Weather Conditions
-                _buildInfoSection(
-                  'Weather Conditions',
-                  Icons.wb_sunny,
-                  hotspot.weatherConditions,
-                ),
-
-                SizedBox(height: 16),
-
-                // Best Time to Fish
-                _buildInfoSection(
-                  'Best Time to Fish',
-                  Icons.access_time,
-                  hotspot.bestTimeToFish,
-                ),
-
-                SizedBox(height: 16),
-
-                // Probable Species
-                if (hotspot.probableSpecies.isNotEmpty) ...[
-                  _buildListSection(
-                    'Probable Species',
-                    Icons.pets,
-                    hotspot.probableSpecies,
-                    Colors.blue,
-                  ),
-                  SizedBox(height: 16),
-                ],
-
-                // Precautions
-                if (hotspot.precautions.isNotEmpty) ...[
-                  _buildListSection(
-                    'Precautions',
-                    Icons.warning,
-                    hotspot.precautions,
-                    Colors.orange,
-                  ),
-                  SizedBox(height: 20),
-                ],
-
-                // Navigate Button
-                Container(
-                  width: double.infinity,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.blue[400]!, Colors.blue[600]!],
-                    ),
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(25),
-                      onTap: () {
-                        Navigator.pop(context);
-                        _mapController?.animateCamera(
-                          CameraUpdate.newLatLngZoom(
-                            LatLng(hotspot.latitude, hotspot.longitude),
-                            15,
-                          ),
-                        );
-                      },
-                      child: Center(
-                        child: Text(
-                          'Navigate to Hotspot',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ],
