@@ -13,6 +13,67 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isEnglish = true;
+  bool _isLoggingOut = false;
+
+  Future<void> _handleLogout() async {
+    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+
+    setState(() {
+      _isLoggingOut = true;
+    });
+
+    try {
+      // Show confirmation dialog
+      bool? shouldLogout = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Confirm Logout'),
+            content: const Text('Are you sure you want to log out?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                child: const Text('Logout'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (shouldLogout == true) {
+        // Perform logout
+        await authViewModel.signOut();
+
+        // Navigate to login screen and clear all previous routes
+        if (mounted) {
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil('/login', (route) => false);
+        }
+      }
+    } catch (e) {
+      // Show error message if logout fails
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to logout: ${e.toString()}'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoggingOut = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -168,12 +229,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  // TODO: Implement logout
-                },
-                icon: const Icon(Icons.logout, color: Colors.white),
+                onPressed: _isLoggingOut ? null : _handleLogout,
+                icon:
+                    _isLoggingOut
+                        ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                        : const Icon(Icons.logout, color: Colors.white),
                 label: Text(
-                  'Log Out',
+                  _isLoggingOut ? 'Logging Out...' : 'Log Out',
                   style: AppStyles.titleLarge.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
