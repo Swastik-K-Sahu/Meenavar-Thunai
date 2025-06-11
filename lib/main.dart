@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:meenavar_thunai/core/services/hotspot_prediction_service.dart';
 import 'package:meenavar_thunai/core/utils/firebase_options.dart';
-import 'package:meenavar_thunai/presentation/viewmodels/hotspot_viewmodel.dart';
-import 'package:meenavar_thunai/presentation/viewmodels/maps_viewmodel.dart';
+import 'package:meenavar_thunai/presentation/viewmodels/fishing_maps_viewmodel.dart';
 import 'package:meenavar_thunai/secrets.dart';
 import 'package:provider/provider.dart';
 import '../app/routes.dart';
@@ -41,12 +40,11 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => locator<AuthViewModel>()),
-        ChangeNotifierProvider(create: (_) => MapsViewModel()),
         ChangeNotifierProvider(create: (context) => FishCatchViewModel()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
         ChangeNotifierProvider(
           create:
-              (_) => HotspotViewModel(
+              (_) => FishingMapsViewModel(
                 predictionService: HotspotPredictionService(
                   geminiApiKey:
                       AppSecrets.geminiApiKey, // Gemini API key from secrets

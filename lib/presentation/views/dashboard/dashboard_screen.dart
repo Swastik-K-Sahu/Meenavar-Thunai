@@ -11,7 +11,7 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_styles.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../catch_log/fish_catch_screen.dart';
-import '../map/map_screen.dart';
+import '../map/fishing_maps_screen.dart';
 import '../profile/profile_screen.dart';
 import '../sustainable_products/sustainable_prod_screen.dart';
 import '../weather/weather_widget.dart';
@@ -204,7 +204,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const MapsScreen(),
+                  builder: (context) => const FishingMapsScreen(),
                   settings: const RouteSettings(name: 'MapsScreen'),
                 ),
               ).then((_) => setState(() => _currentIndex = 0));
