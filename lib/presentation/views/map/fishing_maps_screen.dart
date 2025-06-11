@@ -3,8 +3,11 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:meenavar_thunai/secrets.dart';
+import 'package:provider/provider.dart';
+import 'package:lottie/lottie.dart' as lottie;
 import '../../../models/fishing_hotspot.dart';
 import '../../../core/services/hotspot_prediction_service.dart';
+import '../../viewmodels/fishing_maps_viewmodel.dart';
 
 class FishingMapsScreen extends StatefulWidget {
   const FishingMapsScreen({super.key});
@@ -16,14 +19,15 @@ class FishingMapsScreen extends StatefulWidget {
 class _FishingMapsScreenState extends State<FishingMapsScreen>
     with TickerProviderStateMixin {
   GoogleMapController? _mapController;
-  Location _location = Location();
+  // Location _location = Location();
   LatLng? _currentPosition;
-  Set<Marker> _markers = {};
-  Set<Circle> _circles = {};
+  final Set<Marker> _markers = {};
+  final Set<Circle> _circles = {};
   List<FishingHotspot> _hotspots = [];
-  bool _isLoading = false;
+  // bool _isLoading = false;
   FishingHotspot? _selectedHotspot;
 
+  late FishingMapsViewModel _fishingMapsViewModel;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
@@ -44,7 +48,13 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
     _pulseController.repeat(reverse: true);
-    _getCurrentLocation();
+
+    _fishingMapsViewModel = Provider.of<FishingMapsViewModel>(
+      context,
+      listen: false,
+    );
+    _fishingMapsViewModel.initializeLocation();
+    _fishingMapsViewModel.loadEEZData();
   }
 
   @override
@@ -53,98 +63,63 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
     super.dispose();
   }
 
-  Future<void> _getCurrentLocation() async {
-    try {
-      bool serviceEnabled = await _location.serviceEnabled();
-      if (!serviceEnabled) {
-        serviceEnabled = await _location.requestService();
-        if (!serviceEnabled) return;
-      }
-
-      PermissionStatus permissionGranted = await _location.hasPermission();
-      if (permissionGranted == PermissionStatus.denied) {
-        permissionGranted = await _location.requestPermission();
-        if (permissionGranted != PermissionStatus.granted) return;
-      }
-
-      LocationData locationData = await _location.getLocation();
-      setState(() {
-        _currentPosition = LatLng(
-          locationData.latitude!,
-          locationData.longitude!,
-        );
-        print('Current location: $_currentPosition');
-      });
-    } catch (e) {
-      print('Error getting location: $e');
-    }
-  }
-
   Future<void> _findHotspots() async {
-    if (_currentPosition == null) return;
+    if (_fishingMapsViewModel.currentLocation == null) return;
+
+    await _fishingMapsViewModel.findHotspots(
+      centerLat: _fishingMapsViewModel.currentLocation!.latitude,
+      centerLng: _fishingMapsViewModel.currentLocation!.longitude,
+      radiusKm: 20.0,
+    );
 
     setState(() {
-      _isLoading = true;
-      _markers.clear();
       _circles.clear();
-      _hotspots.clear();
+      _markers.clear();
+      _createHotspotMarkers();
+      if (_fishingMapsViewModel.hotspots.isNotEmpty) {
+        _showHotspotsFoundSnackbar(_fishingMapsViewModel.hotspots.length);
+      } else if (_fishingMapsViewModel.error != null) {
+        _showErrorSnackbar(_fishingMapsViewModel.error!);
+      }
     });
-
-    try {
-      final hotspots = await _predictionService.predictHotspots(
-        centerLat: _currentPosition!.latitude,
-        centerLng: _currentPosition!.longitude,
-        radiusKm: 20.0,
-      );
-
-      setState(() {
-        _hotspots = hotspots;
-        print('Found ${hotspots.length} hotspots');
-        _createHotspotMarkers();
-        _isLoading = false;
-      });
-
-      _showHotspotsFoundSnackbar(hotspots.length);
-    } catch (e) {
-      setState(() => _isLoading = false);
-      _showErrorSnackbar('Failed to find hotspots: $e');
-    }
   }
 
   void _createHotspotMarkers() {
-    _markers.clear();
-    _circles.clear();
+    setState(() {
+      _circles.clear();
+      _markers.clear();
+      _fishingMapsViewModel.clearHotspots();
+      for (int i = 0; i < _fishingMapsViewModel.hotspots.length; i++) {
+        final hotspot = _fishingMapsViewModel.hotspots[i];
+        final color = _getHotspotColor(hotspot.probability);
 
-    for (int i = 0; i < _hotspots.length; i++) {
-      final hotspot = _hotspots[i];
-      final color = _getHotspotColor(hotspot.probability);
-
-      _markers.add(
-        Marker(
-          markerId: MarkerId('hotspot_$i'),
-          position: LatLng(hotspot.latitude, hotspot.longitude),
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-            _getMarkerHue(hotspot.probability),
+        _markers.add(
+          Marker(
+            markerId: MarkerId('hotspot_$i'),
+            position: LatLng(hotspot.latitude, hotspot.longitude),
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+              _getMarkerHue(hotspot.probability),
+            ),
+            onTap: () => _showHotspotDetails(hotspot),
+            infoWindow: InfoWindow(
+              title: 'Fishing Hotspot',
+              snippet: '${(hotspot.probability * 100).toInt()}% probability',
+            ),
           ),
-          onTap: () => _showHotspotDetails(hotspot),
-          infoWindow: InfoWindow(
-            title: 'Fishing Hotspot',
-            snippet: '${(hotspot.probability * 100).toInt()}% probability',
-          ),
-        ),
-      );
+        );
 
-      _circles.add(
-        Circle(
-          circleId: CircleId('circle_$i'),
-          center: LatLng(hotspot.latitude, hotspot.longitude),
-          radius: hotspot.radius * 1000, // Convert km to meters
-          fillColor: color.withOpacity(0.2),
-          strokeColor: color,
-          strokeWidth: 2,
-        ),
-      );
-    }
+        _circles.add(
+          Circle(
+            circleId: CircleId('circle_$i'),
+            center: LatLng(hotspot.latitude, hotspot.longitude),
+            radius: hotspot.radius * 1000, // Convert km to meters
+            fillColor: color,
+            strokeColor: color,
+            strokeWidth: 2,
+          ),
+        );
+      }
+    });
   }
 
   Color _getHotspotColor(double probability) {
@@ -162,7 +137,7 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
   }
 
   void _showHotspotDetails(FishingHotspot hotspot) {
-    setState(() => _selectedHotspot = hotspot);
+    _fishingMapsViewModel.selectHotspot(hotspot);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -197,20 +172,26 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
       body: Stack(
         children: [
           // Google Map
-          GoogleMap(
-            onMapCreated: (GoogleMapController controller) {
-              _mapController = controller;
+          Consumer<FishingMapsViewModel>(
+            builder: (context, viewModel, child) {
+              return GoogleMap(
+                onMapCreated: (GoogleMapController controller) {
+                  _mapController = controller;
+                },
+                initialCameraPosition: CameraPosition(
+                  target:
+                      _currentPosition ?? LatLng(7.84725004878, 77.5753854671),
+                  zoom: 10,
+                ),
+                markers: _markers,
+                circles: _circles,
+                polylines: viewModel.eezPolylines,
+                myLocationEnabled: true,
+                myLocationButtonEnabled: false,
+                mapType: MapType.hybrid,
+                zoomControlsEnabled: false,
+              );
             },
-            initialCameraPosition: CameraPosition(
-              target: _currentPosition ?? LatLng(7.84725004878, 77.5753854671),
-              zoom: 10,
-            ),
-            markers: _markers,
-            circles: _circles,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: false,
-            mapType: MapType.hybrid,
-            zoomControlsEnabled: false,
           ),
 
           // App Bar
@@ -267,6 +248,73 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
             ),
           ),
 
+          // Proximity Warning UI
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              child: Consumer<FishingMapsViewModel>(
+                builder: (context, fishingMapsViewModel, child) {
+                  if (!fishingMapsViewModel.isBorderProximityWarningActive) {
+                    return const SizedBox.shrink();
+                  }
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.red.shade200.withOpacity(0.5),
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        lottie.Lottie.asset(
+                          'assets/animations/warning.json', // Ensure this path is correct
+                          width: 50,
+                          height: 50,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Border Proximity Alert',
+                                style: TextStyle(
+                                  color: Colors.red.shade800,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              Text(
+                                'You are ${fishingMapsViewModel.currentBorderDistance.toStringAsFixed(2)} km from the maritime border.',
+                                style: TextStyle(
+                                  color: Colors.red.shade700,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+
           // Find Hotspots Button
           Positioned(
             bottom: 100,
@@ -276,7 +324,10 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
               animation: _pulseAnimation,
               builder: (context, child) {
                 return Transform.scale(
-                  scale: _isLoading ? (1.0 + _pulseAnimation.value * 0.1) : 1.0,
+                  scale:
+                      _fishingMapsViewModel.isLoading
+                          ? (1.0 + _pulseAnimation.value * 0.1)
+                          : 1.0,
                   child: Container(
                     height: 60,
                     decoration: BoxDecoration(
@@ -296,10 +347,13 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
                       color: Colors.transparent,
                       child: InkWell(
                         borderRadius: BorderRadius.circular(30),
-                        onTap: _isLoading ? null : _findHotspots,
+                        onTap:
+                            _fishingMapsViewModel.isLoading
+                                ? null
+                                : _findHotspots,
                         child: Center(
                           child:
-                              _isLoading
+                              _fishingMapsViewModel.isLoading
                                   ? Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -355,9 +409,12 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
             right: 20,
             child: FloatingActionButton(
               onPressed: () {
-                if (_currentPosition != null && _mapController != null) {
+                if (_fishingMapsViewModel.currentLocation != null &&
+                    _mapController != null) {
                   _mapController!.animateCamera(
-                    CameraUpdate.newLatLng(_currentPosition!),
+                    CameraUpdate.newLatLng(
+                      _fishingMapsViewModel.currentLocation!,
+                    ),
                   );
                 }
               },
@@ -367,7 +424,7 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
           ),
 
           // Hotspots Legend
-          if (_hotspots.isNotEmpty)
+          if (_fishingMapsViewModel.hotspots.isNotEmpty)
             Positioned(top: 100, right: 20, child: _buildHotspotsLegend()),
         ],
       ),
@@ -444,9 +501,7 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          // Wrap the content with SingleChildScrollView
           Expanded(
-            // Use Expanded to give the SingleChildScrollView flexible space
             child: SingleChildScrollView(
               child: Padding(
                 padding: EdgeInsets.all(20),
