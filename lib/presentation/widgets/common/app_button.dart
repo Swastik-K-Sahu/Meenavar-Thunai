@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_styles.dart';
-import '../../theme/app_dimensions.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_styles.dart';
+import '../../../theme/app_dimensions.dart';
 
 enum ButtonType { primary, secondary, outline, text }
 

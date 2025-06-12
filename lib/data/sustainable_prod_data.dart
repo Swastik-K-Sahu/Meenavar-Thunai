@@ -1,4 +1,3 @@
-// lib/data/sustainable_products_data.dart
 import '../models/sustainable_prod.dart';
 
 class SustainableProductsData {

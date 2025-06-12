@@ -62,10 +62,7 @@ class GeminiService {
     String newMessage,
   ) async {
     try {
-      // Build more efficient conversation context
       List<Content> contents = [];
-
-      // Add recent conversation history (last 6 exchanges to avoid token limits)
       final recentHistory = conversationHistory.take(12).toList();
 
       if (recentHistory.isNotEmpty) {

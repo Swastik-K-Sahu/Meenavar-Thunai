@@ -136,7 +136,6 @@ class _WeatherWidgetState extends State<WeatherWidget> {
   }
 
   Widget _buildWeatherContent(String formattedDate) {
-    // Use API data or fallback values
     final double temperature = weatherData?.temperature ?? 16.0;
     final double windSpeed = weatherData?.windSpeed ?? 10.0;
     final bool isDay = (weatherData?.isDay ?? 1) == 1;
@@ -234,11 +233,11 @@ class _WeatherWidgetState extends State<WeatherWidget> {
 
   IconData _getWindIcon(double windSpeed) {
     if (windSpeed > 20) {
-      return Icons.air; // Gusty wind
+      return Icons.air;
     } else if (windSpeed > 10) {
-      return Icons.waves; // Moderate breeze
+      return Icons.waves;
     } else {
-      return Icons.air; // Light breeze
+      return Icons.air;
     }
   }
 

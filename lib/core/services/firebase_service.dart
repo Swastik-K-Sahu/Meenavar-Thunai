@@ -61,14 +61,6 @@ class FirebaseService {
                     FishCatchModel.fromMap(doc.data() as Map<String, dynamic>),
               )
               .toList();
-
-      // Debug print
-      for (var Catch in monthlyCatches) {
-        print(
-          'Monthly catch: ${Catch.fishSpecies}, quantity: ${Catch.quantityInQuintal}, date: ${Catch.timestamp}',
-        );
-      }
-
       return monthlyCatches;
     } catch (e) {
       print('Error fetching monthly catches: $e');
@@ -102,13 +94,7 @@ class FirebaseService {
 
       for (var doc in snapshot.docs) {
         final data = doc.data() as Map<String, dynamic>;
-        if (data.containsKey('pointsAwarded') && data['pointsAwarded'] is int) {
-          totalPoints += data['pointsAwarded'] as int;
-        } else {
-          print(
-            'Warning: Document ${doc.id} does not have a valid "pointsAwarded" field or it\'s not an integer.',
-          );
-        }
+        totalPoints += data['pointsAwarded'] as int;
       }
       print(
         'Fetched total sustainability points for user $userId: $totalPoints',

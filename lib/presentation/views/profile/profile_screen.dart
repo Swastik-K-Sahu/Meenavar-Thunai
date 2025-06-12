@@ -16,56 +16,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoggingOut = false;
 
   // Localization strings
-  Map<String, Map<String, String>> get _localizedStrings => {
-    'en': {
-      'myProfile': 'My Profile',
-      'user': 'User',
-      'notSet': 'Not Set',
-      'personalInformation': 'Personal Information',
-      'fullName': 'Full Name',
-      'mobileNumber': 'Mobile Number',
-      'fishingLicenseNumber': 'Fishing License Number',
-      'emergencyContact': 'Emergency Contact',
-      'appSettings': 'App Settings',
-      'language': 'Language',
-      'english': 'English',
-      'tamil': 'தமிழ்',
-      'termsConditions': 'Terms & Conditions',
-      'privacyPolicy': 'Privacy Policy',
-      'aboutCoastalMate': 'About Coastal Mate',
-      'logOut': 'Log Out',
-      'loggingOut': 'Logging Out...',
-      'confirmLogout': 'Confirm Logout',
-      'logoutConfirmation': 'Are you sure you want to log out?',
-      'cancel': 'Cancel',
-      'logout': 'Logout',
-      'failedToLogout': 'Failed to logout',
-    },
-    'ta': {
-      'myProfile': 'என் சுயவிவரம்',
-      'user': 'பயனர்',
-      'notSet': 'அமைக்கப்படவில்லை',
-      'personalInformation': 'தனிப்பட்ட தகவல்',
-      'fullName': 'முழு பெயர்',
-      'mobileNumber': 'மொபைல் எண்',
-      'fishingLicenseNumber': 'மீன்பிடி உரிமம் எண்',
-      'emergencyContact': 'அவசர தொடர்பு',
-      'appSettings': 'ஆப்ஸ் அமைப்புகள்',
-      'language': 'மொழி',
-      'english': 'English',
-      'tamil': 'தமிழ்',
-      'termsConditions': 'விதிமுறைகள் & நிபந்தனைகள்',
-      'privacyPolicy': 'தனியுரிமை கொள்கை',
-      'aboutCoastalMate': 'கடலோர துணை பற்றி',
-      'logOut': 'வெளியேறு',
-      'loggingOut': 'வெளியேறுகிறது...',
-      'confirmLogout': 'வெளியேறுவதை உறுதிப்படுத்தவும்',
-      'logoutConfirmation': 'நீங்கள் நிச்சயமாக வெளியேற விரும்புகிறீர்களா?',
-      'cancel': 'ரத்து செய்',
-      'logout': 'வெளியேறு',
-      'failedToLogout': 'வெளியேற முடியவில்லை',
-    },
-  };
+  late final Map<String, Map<String, String>> _localizedStrings;
+
+  @override
+  void initState() {
+    super.initState();
+    _localizedStrings = {
+      'en': {
+        'myProfile': 'My Profile',
+        'user': 'User',
+        'notSet': 'Not Set',
+        'personalInformation': 'Personal Information',
+        'fullName': 'Full Name',
+        'mobileNumber': 'Mobile Number',
+        'fishingLicenseNumber': 'Fishing License Number',
+        'emergencyContact': 'Emergency Contact',
+        'appSettings': 'App Settings',
+        'language': 'Language',
+        'english': 'English',
+        'tamil': 'தமிழ்',
+        'termsConditions': 'Terms & Conditions',
+        'privacyPolicy': 'Privacy Policy',
+        'aboutCoastalMate': 'About Meenavar Thunai',
+        'logOut': 'Log Out',
+        'loggingOut': 'Logging Out...',
+        'confirmLogout': 'Confirm Logout',
+        'logoutConfirmation': 'Are you sure you want to log out?',
+        'cancel': 'Cancel',
+        'logout': 'Logout',
+        'failedToLogout': 'Failed to logout',
+      },
+      'ta': {
+        'myProfile': 'என் சுயவிவரம்',
+        'user': 'பயனர்',
+        'notSet': 'அமைக்கப்படவில்லை',
+        'personalInformation': 'தனிப்பட்ட தகவல்',
+        'fullName': 'முழு பெயர்',
+        'mobileNumber': 'மொபைல் எண்',
+        'fishingLicenseNumber': 'மீன்பிடி உரிமம் எண்',
+        'emergencyContact': 'அவசர தொடர்பு',
+        'appSettings': 'ஆப்ஸ் அமைப்புகள்',
+        'language': 'மொழி',
+        'english': 'English',
+        'tamil': 'தமிழ்',
+        'termsConditions': 'விதிமுறைகள் & நிபந்தனைகள்',
+        'privacyPolicy': 'தனியுரிமை கொள்கை',
+        'aboutCoastalMate': 'கடலோர துணை பற்றி',
+        'logOut': 'வெளியேறு',
+        'loggingOut': 'வெளியேறுகிறது...',
+        'confirmLogout': 'வெளியேறுவதை உறுதிப்படுத்தவும்',
+        'logoutConfirmation': 'நீங்கள் நிச்சயமாக வெளியேற விரும்புகிறீர்களா?',
+        'cancel': 'ரத்து செய்',
+        'logout': 'வெளியேறு',
+        'failedToLogout': 'வெளியேற முடியவில்லை',
+      },
+    };
+  }
 
   String _getText(String key) {
     final lang = _isEnglish ? 'en' : 'ta';
@@ -80,7 +86,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     try {
-      // Show confirmation dialog
       bool? shouldLogout = await showDialog<bool>(
         context: context,
         builder: (BuildContext context) {
@@ -103,10 +108,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
 
       if (shouldLogout == true) {
-        // Perform logout
         await authViewModel.signOut();
-
-        // Navigate to login screen and clear all previous routes
         if (mounted) {
           Navigator.of(
             context,
@@ -114,7 +116,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         }
       }
     } catch (e) {
-      // Show error message if logout fails
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -210,9 +211,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             shape: BoxShape.circle,
                           ),
                           child: InkWell(
-                            onTap: () {
-                              // TODO: Implement image picking
-                            },
+                            onTap: () {},
                             child: const Icon(
                               Icons.camera_alt,
                               color: Colors.white,
@@ -343,98 +342,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String value, {
     required VoidCallback onTap,
   }) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 0,
-      color: Colors.grey[50],
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey[200]!),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
+    return _buildCustomCard(
+      onTap: onTap,
+      children: [
+        Icon(icon, color: AppColors.primary),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: AppColors.primary),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: AppStyles.bodyMedium.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      value,
-                      style: AppStyles.bodyLarge.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+              Text(
+                title,
+                style: AppStyles.bodyMedium.copyWith(color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: AppStyles.bodyLarge.copyWith(
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              Icon(Icons.chevron_right, color: Colors.grey[400]),
             ],
           ),
         ),
-      ),
+        Icon(Icons.chevron_right, color: Colors.grey[400]),
+      ],
     );
   }
 
   Widget _buildLanguageSelector() {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 0,
-      color: Colors.grey[50],
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey[200]!),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Icon(Icons.language, color: AppColors.primary),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _getText('language'),
-                    style: AppStyles.bodyMedium.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _isEnglish ? _getText('english') : _getText('tamil'),
-                    style: AppStyles.bodyLarge.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+    return _buildCustomCard(
+      children: [
+        Icon(Icons.language, color: AppColors.primary),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _getText('language'),
+                style: AppStyles.bodyMedium.copyWith(color: Colors.grey[600]),
               ),
-            ),
-            Switch(
-              value: _isEnglish,
-              onChanged: (value) {
-                setState(() {
-                  _isEnglish = value;
-                });
-              },
-              activeColor: AppColors.primary,
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                _isEnglish ? _getText('english') : _getText('tamil'),
+                style: AppStyles.bodyLarge.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+        Switch(
+          value: _isEnglish,
+          onChanged: (value) {
+            setState(() {
+              _isEnglish = value;
+            });
+          },
+          activeColor: AppColors.primary,
+        ),
+      ],
     );
   }
 
@@ -442,6 +410,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
     IconData icon,
     String title, {
     required VoidCallback onTap,
+  }) {
+    return _buildCustomCard(
+      onTap: onTap,
+      children: [
+        Icon(icon, color: AppColors.primary),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(
+            title,
+            style: AppStyles.bodyLarge.copyWith(fontWeight: FontWeight.w500),
+          ),
+        ),
+        Icon(Icons.chevron_right, color: Colors.grey[400]),
+      ],
+    );
+  }
+
+  Widget _buildCustomCard({
+    VoidCallback? onTap,
+    required List<Widget> children,
   }) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -456,21 +444,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Icon(icon, color: AppColors.primary),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  title,
-                  style: AppStyles.bodyLarge.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              Icon(Icons.chevron_right, color: Colors.grey[400]),
-            ],
-          ),
+          child: Row(children: children),
         ),
       ),
     );

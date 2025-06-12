@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../models/fish_catch_model.dart';
+import '../../../models/fish_catch_model.dart';
 
 class CatchDetailCard extends StatelessWidget {
   final FishCatchModel catchData;

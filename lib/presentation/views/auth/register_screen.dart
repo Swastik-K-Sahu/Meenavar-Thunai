@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../app/routes.dart';
 import '../../../core/utils/validator_utils.dart';
-import '../../../core/widgets/app_button.dart';
-import '../../../core/widgets/app_text_field.dart';
-import '../../../core/widgets/loading_widget.dart';
+import '../../widgets/common/app_button.dart';
+import '../../widgets/auth/app_text_field.dart';
+import '../../widgets/common/loading_widget.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_styles.dart';
 import '../../viewmodels/auth_viewmodel.dart';
@@ -102,7 +102,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       body: Stack(
         children: [
-          // Background with gradient
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -282,7 +281,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
           ),
-          // Loading overlay
           if (authViewModel.isLoading) const LoadingWidget(),
         ],
       ),

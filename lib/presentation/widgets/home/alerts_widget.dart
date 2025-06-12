@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_styles.dart';
+import '../../../theme/app_styles.dart';
 
 class AlertsWidget extends StatelessWidget {
   const AlertsWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Single weather-related alert
     final alert = {
       'title': 'High Tide Warning',
       'description':
@@ -15,7 +14,6 @@ class AlertsWidget extends StatelessWidget {
       'time': '1h ago',
     };
 
-    // Determine alert color and icon
     Color alertColor = Colors.orange;
     IconData alertIcon = Icons.warning_amber_rounded;
 

@@ -28,7 +28,6 @@ class WeatherData {
   });
 
   factory WeatherData.fromJson(Map<String, dynamic> json) {
-    // Get current hour for rain calculation
     final currentHour = DateTime.now().hour;
 
     return WeatherData(

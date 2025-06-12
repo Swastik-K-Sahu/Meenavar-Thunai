@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 
 import '../../../app/routes.dart';
 import '../../../core/services/fishing_ban_service.dart';
-import '../../../core/widgets/alerts_widget.dart';
-import '../../../core/widgets/fishing_ban_indicator.dart';
+import '../../widgets/home/alerts_widget.dart';
+import '../../widgets/home/fishing_ban_indicator.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_styles.dart';
 import '../../viewmodels/auth_viewmodel.dart';
