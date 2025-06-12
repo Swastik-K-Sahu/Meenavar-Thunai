@@ -4,7 +4,7 @@ import 'package:meenavar_thunai/presentation/views/map/fishing_maps_screen.dart'
 import '../presentation/views/splash_screen.dart';
 import '../presentation/views/auth/login_screen.dart';
 import '../presentation/views/auth/register_screen.dart';
-import '../presentation/views/dashboard/dashboard_screen.dart';
+import '../presentation/views/home/home_screen.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
