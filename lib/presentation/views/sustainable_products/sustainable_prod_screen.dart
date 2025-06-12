@@ -210,7 +210,7 @@ class SustainableProductsScreen extends StatelessWidget {
                                 ),
                                 SizedBox(width: 4),
                                 Text(
-                                  "Use 300 points for 15% off",
+                                  "Use 600 points for 5% off",
                                   style: TextStyle(
                                     color: Colors.green,
                                     fontSize: 12,
@@ -348,7 +348,7 @@ class SustainableProductsScreen extends StatelessWidget {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'Earn sustainability points with every purchase. Points can be redeemed for discounts on sustainable fishing equipment!',
+                                'Earn sustainability points with every fish catch log. Points can be redeemed for discounts on sustainable fishing equipment!',
                                 style: TextStyle(
                                   color: AppColors.accent,
                                   fontSize: 12,

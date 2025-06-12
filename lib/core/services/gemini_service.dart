@@ -117,7 +117,7 @@ class GeminiService {
   }
 
   String _handleGeminiError(GenerativeAIException e) {
-    switch (e.message?.toLowerCase()) {
+    switch (e.message.toLowerCase()) {
       case String msg when msg.contains('api key'):
         return 'API key error. Please check your configuration.';
       case String msg when msg.contains('quota'):

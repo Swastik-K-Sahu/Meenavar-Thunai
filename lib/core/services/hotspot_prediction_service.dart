@@ -217,7 +217,7 @@ class HotspotPredictionService {
     - Try to give practical tips for fishing in these conditions
     - Try to give time duration of fishing in these conditions, not just a time of day, 
       e.g., "Best from 6 AM to 10 AM"
-    - Try not to fish before sunrise or after sunset unless there are specific conditions that allow it
+    - Give the timing during sunlight hours, as fishermen prefer fishing during the day, not at night
     ''';
   }
 

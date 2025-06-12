@@ -28,7 +28,7 @@ class _WeatherWidgetState extends State<WeatherWidget> {
 
   Future<void> _fetchWeatherData() async {
     try {
-      const String apiUrl = AppSecrets.weatherApiKey;
+      const String apiUrl = AppSecrets.weatherApiUrl;
 
       final response = await http.get(Uri.parse(apiUrl));
 

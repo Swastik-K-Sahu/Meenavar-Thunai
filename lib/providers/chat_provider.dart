@@ -51,14 +51,6 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _updateMessage(String messageId, ChatMessage updatedMessage) {
-    final index = _messages.indexWhere((msg) => msg.id == messageId);
-    if (index != -1) {
-      _messages[index] = updatedMessage;
-      notifyListeners();
-    }
-  }
-
   void _removeMessage(String messageId) {
     _messages.removeWhere((msg) => msg.id == messageId);
     notifyListeners();

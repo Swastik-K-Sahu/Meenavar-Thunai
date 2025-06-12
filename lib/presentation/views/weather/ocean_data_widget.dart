@@ -25,7 +25,7 @@ class _OceanDataWidgetState extends State<OceanDataWidget> {
 
   Future<void> _fetchOceanData() async {
     try {
-      const String apiUrl = AppSecrets.oceanWeatherApiKey;
+      const String apiUrl = AppSecrets.oceanWeatherApiUrl;
 
       final response = await http.get(Uri.parse(apiUrl));
 
