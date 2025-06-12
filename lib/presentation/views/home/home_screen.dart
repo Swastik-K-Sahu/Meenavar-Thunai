@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
@@ -15,7 +14,6 @@ import '../map/fishing_maps_screen.dart';
 import '../profile/profile_screen.dart';
 import '../sustainable_products/sustainable_prod_screen.dart';
 import '../weather/weather_widget.dart';
-import 'package:meenavar_thunai/core/widgets/last_trip_summary_widget.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -30,12 +28,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final authViewModel = Provider.of<AuthViewModel>(context);
-    final today = DateFormat('EEEE, MMMM d').format(DateTime.now());
     final user = authViewModel.user;
     final isFishingBanActive = FishingBanService.isBanActive();
 
-    return WillPopScope(
-      onWillPop: () async => false,
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (bool didPop) {
+        if (didPop == false) {
+          // Prevent popping the dashboard screen
+        }
+      },
       child: Scaffold(
         appBar: AppBar(
           elevation: 0,
@@ -54,7 +56,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Icons.notifications_outlined,
                 color: AppColors.textDark,
               ),
-              onPressed: () {},
+              onPressed: () {
+                // Dummy notifications action
+                Fluttertoast.showToast(
+                  msg: "Notifications feature coming soon!",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                  backgroundColor: AppColors.primaryLight,
+                  textColor: Colors.white,
+                );
+              },
             ),
             IconButton(
               icon: CircleAvatar(
@@ -79,7 +90,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ],
         ),
-
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             Navigator.pushNamed(context, AppRoutes.chat);
@@ -87,7 +97,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           backgroundColor: Colors.blue.shade800,
           child: const Icon(Icons.chat),
         ),
-
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -107,27 +116,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 24),
 
-              const AlertsWidget(),
-              const SizedBox(height: 24),
-
-              const WeatherWidget(),
-              const SizedBox(height: 24),
-              // Fishing Hotspots Card
+              // Find Fishing Hotspots Card
               GestureDetector(
                 onTap: () => Navigator.pushNamed(context, '/fishing-hotspots'),
                 child: Container(
-                  margin: EdgeInsets.symmetric(vertical: 8),
-                  padding: EdgeInsets.all(20),
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.blue[400]!, Colors.blue[600]!],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue.withOpacity(0.3),
+                        color: Colors.grey.withOpacity(0.2),
                         blurRadius: 10,
                         offset: Offset(0, 5),
                       ),
@@ -136,18 +136,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Row(
                     children: [
                       Container(
-                        padding: EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: AppColors.primaryLight,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
                           Icons.search,
-                          color: Colors.white,
+                          color: AppColors.primary,
                           size: 24,
                         ),
                       ),
-                      SizedBox(width: 16),
+                      const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,16 +155,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             Text(
                               'Find Fishing Hotspots',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: AppColors.textDark,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
                               'AI-powered predictions for the best fishing spots',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.9),
+                                color: AppColors.textDark.withOpacity(0.7),
                                 fontSize: 14,
                               ),
                             ),
@@ -173,20 +173,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       Icon(
                         Icons.arrow_forward_ios,
-                        color: Colors.white,
+                        color: AppColors.textDark.withOpacity(0.6),
                         size: 16,
                       ),
                     ],
                   ),
                 ),
               ),
+              const SizedBox(height: 24),
+
+              const AlertsWidget(),
+              const SizedBox(height: 24),
+
+              const WeatherWidget(),
+              const SizedBox(height: 24),
               const FishingBanIndicator(),
               const SizedBox(height: 24),
-              const LastTripSummary(),
             ],
           ),
         ),
-
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex,
           selectedItemColor: AppColors.primary,

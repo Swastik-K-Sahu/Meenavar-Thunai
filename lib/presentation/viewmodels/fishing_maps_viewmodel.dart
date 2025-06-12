@@ -91,7 +91,7 @@ class FishingMapsViewModel extends ChangeNotifier {
         if (geometry['type'] == 'Polygon' ||
             geometry['type'] == 'MultiPolygon') {
           List<dynamic> coordinates =
-              geometry['type'] == 'Polygon'
+              geometry['type'] == 'MultiPolygon'
                   ? [geometry['coordinates']]
                   : geometry['coordinates'];
 

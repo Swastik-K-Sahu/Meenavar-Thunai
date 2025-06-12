@@ -8,6 +8,7 @@ import 'package:lottie/lottie.dart' as lottie;
 import '../../../models/fishing_hotspot.dart';
 import '../../../core/services/hotspot_prediction_service.dart';
 import '../../viewmodels/fishing_maps_viewmodel.dart';
+import '../../../data/boat_type.dart';
 
 class FishingMapsScreen extends StatefulWidget {
   const FishingMapsScreen({super.key});
@@ -19,17 +20,33 @@ class FishingMapsScreen extends StatefulWidget {
 class _FishingMapsScreenState extends State<FishingMapsScreen>
     with TickerProviderStateMixin {
   GoogleMapController? _mapController;
-  // Location _location = Location();
   LatLng? _currentPosition;
   final Set<Marker> _markers = {};
   final Set<Circle> _circles = {};
+  final Set<Polyline> _routePolylines = {}; // For optimized route
   List<FishingHotspot> _hotspots = [];
-  // bool _isLoading = false;
   FishingHotspot? _selectedHotspot;
-
+  Map<String, dynamic>? _optimizedRoute; // Store route data
+  bool _isRouteLoading = false;
+  bool _showRouteDetailsCard = false;
   late FishingMapsViewModel _fishingMapsViewModel;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+  double _currentZoom = 10.0; // Track current zoom level
+
+  Future<void> _zoomIn() async {
+    if (_mapController != null) {
+      _currentZoom = (_currentZoom + 1).clamp(1.0, 20.0);
+      await _mapController!.animateCamera(CameraUpdate.zoomTo(_currentZoom));
+    }
+  }
+
+  Future<void> _zoomOut() async {
+    if (_mapController != null) {
+      _currentZoom = (_currentZoom - 1).clamp(1.0, 20.0);
+      await _mapController!.animateCamera(CameraUpdate.zoomTo(_currentZoom));
+    }
+  }
 
   final HotspotPredictionService _predictionService = HotspotPredictionService(
     geminiApiKey: AppSecrets.geminiApiKey,
@@ -55,6 +72,11 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
     );
     _fishingMapsViewModel.initializeLocation();
     _fishingMapsViewModel.loadEEZData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(Duration(milliseconds: 500), () {
+        _moveToCurrentLocation();
+      });
+    });
   }
 
   @override
@@ -64,62 +86,132 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
   }
 
   Future<void> _findHotspots() async {
-    if (_fishingMapsViewModel.currentLocation == null) return;
+    if (_fishingMapsViewModel.currentLocation == null) {
+      print('Current location is null, cannot find hotspots.');
+      _showErrorSnackbar('Current location unavailable.');
+      return;
+    }
 
+    print(
+      'Finding hotspots for location: (${_fishingMapsViewModel.currentLocation!.latitude}, ${_fishingMapsViewModel.currentLocation!.longitude})',
+    );
     await _fishingMapsViewModel.findHotspots(
       centerLat: _fishingMapsViewModel.currentLocation!.latitude,
       centerLng: _fishingMapsViewModel.currentLocation!.longitude,
       radiusKm: 20.0,
     );
 
+    print('Hotspots found: ${_fishingMapsViewModel.hotspots.length}');
     setState(() {
+      _hotspots =
+          _fishingMapsViewModel
+              .hotspots; // Store hotspots locally for debugging
       _circles.clear();
       _markers.clear();
       _createHotspotMarkers();
       if (_fishingMapsViewModel.hotspots.isNotEmpty) {
         _showHotspotsFoundSnackbar(_fishingMapsViewModel.hotspots.length);
       } else if (_fishingMapsViewModel.error != null) {
+        print('Error in finding hotspots: ${_fishingMapsViewModel.error}');
         _showErrorSnackbar(_fishingMapsViewModel.error!);
+      } else {
+        print('No hotspots found, but no error reported.');
+        _showErrorSnackbar('No fishing hotspots found in this area.');
       }
     });
   }
 
+  Widget _buildZoomControls() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _zoomIn,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
+              ),
+              child: Container(
+                width: 48,
+                height: 48,
+                child: Icon(Icons.add, color: Colors.blue, size: 24),
+              ),
+            ),
+          ),
+          Container(width: 48, height: 1, color: Colors.grey[300]),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _zoomOut,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(8),
+                bottomRight: Radius.circular(8),
+              ),
+              child: Container(
+                width: 48,
+                height: 48,
+                child: Icon(Icons.remove, color: Colors.blue, size: 24),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _createHotspotMarkers() {
-    setState(() {
-      _circles.clear();
-      _markers.clear();
-      _fishingMapsViewModel.clearHotspots();
-      for (int i = 0; i < _fishingMapsViewModel.hotspots.length; i++) {
-        final hotspot = _fishingMapsViewModel.hotspots[i];
-        final color = _getHotspotColor(hotspot.probability);
+    print('Creating hotspot markers for ${_hotspots.length} hotspots.');
 
-        _markers.add(
-          Marker(
-            markerId: MarkerId('hotspot_$i'),
-            position: LatLng(hotspot.latitude, hotspot.longitude),
-            icon: BitmapDescriptor.defaultMarkerWithHue(
-              _getMarkerHue(hotspot.probability),
-            ),
-            onTap: () => _showHotspotDetails(hotspot),
-            infoWindow: InfoWindow(
-              title: 'Fishing Hotspot',
-              snippet: '${(hotspot.probability * 100).toInt()}% probability',
-            ),
-          ),
-        );
+    for (int i = 0; i < _hotspots.length; i++) {
+      final hotspot = _hotspots[i];
+      final color = _getHotspotColor(hotspot.probability);
 
-        _circles.add(
-          Circle(
-            circleId: CircleId('circle_$i'),
-            center: LatLng(hotspot.latitude, hotspot.longitude),
-            radius: hotspot.radius * 1000, // Convert km to meters
-            fillColor: color,
-            strokeColor: color,
-            strokeWidth: 2,
+      print(
+        'Adding marker for hotspot $i at (${hotspot.latitude}, ${hotspot.longitude}) with probability ${hotspot.probability}',
+      );
+      _markers.add(
+        Marker(
+          markerId: MarkerId('hotspot_$i'),
+          position: LatLng(hotspot.latitude, hotspot.longitude),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            _getMarkerHue(hotspot.probability),
           ),
-        );
-      }
-    });
+          onTap: () => _showHotspotDetails(hotspot),
+          infoWindow: InfoWindow(
+            title: 'Fishing Hotspot',
+            snippet: '${(hotspot.probability * 100).toInt()}% probability',
+          ),
+        ),
+      );
+
+      _circles.add(
+        Circle(
+          circleId: CircleId('circle_$i'),
+          center: LatLng(hotspot.latitude, hotspot.longitude),
+          radius: hotspot.radius * 1000, // Convert km to meters
+          fillColor: color.withOpacity(0.3),
+          strokeColor: color,
+          strokeWidth: 2,
+        ),
+      );
+    }
+    print(
+      'Markers created: ${_markers.length}, Circles created: ${_circles.length}',
+    );
   }
 
   Color _getHotspotColor(double probability) {
@@ -166,6 +258,158 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
     );
   }
 
+  Future<void> _navigateToHotspot(FishingHotspot hotspot) async {
+    // Show boat selection dialog
+    BoatType? selectedBoat = await _showBoatSelectionDialog();
+    if (selectedBoat == null) return;
+
+    setState(() {
+      _isRouteLoading = true;
+    });
+
+    // Fetch weather and ocean data for the hotspot
+    var weatherData = await _predictionService.fetchWeatherData(
+      hotspot.latitude,
+      hotspot.longitude,
+    );
+    var oceanData = await _predictionService.fetchOceanData(
+      hotspot.latitude,
+      hotspot.longitude,
+    );
+
+    if (weatherData == null || oceanData == null) {
+      _showErrorSnackbar('Failed to fetch weather or ocean data.');
+      setState(() {
+        _isRouteLoading = false;
+      });
+      return;
+    }
+
+    // Calculate optimized route
+    var route = await _predictionService.calculateOptimizedRoute(
+      startLat: _fishingMapsViewModel.currentLocation!.latitude,
+      startLng: _fishingMapsViewModel.currentLocation!.longitude,
+      destLat: hotspot.latitude,
+      destLng: hotspot.longitude,
+      boat: selectedBoat,
+      weather: weatherData,
+      ocean: oceanData,
+    );
+
+    if (route != null) {
+      setState(() {
+        _optimizedRoute = route;
+        _showRouteDetailsCard = true;
+        _routePolylines.clear();
+        _routePolylines.add(
+          Polyline(
+            polylineId: PolylineId('optimized_route'),
+            points:
+                (route['waypoints'] as List)
+                    .map(
+                      (point) => LatLng(point['latitude'], point['longitude']),
+                    )
+                    .toList(),
+            color: Colors.blue,
+            width: 5,
+          ),
+        );
+      });
+
+      // Adjust camera to show the entire route
+      _mapController?.animateCamera(
+        CameraUpdate.newLatLngBounds(
+          LatLngBounds(
+            southwest: LatLng(
+              (_fishingMapsViewModel.currentLocation!.latitude <
+                      hotspot.latitude
+                  ? _fishingMapsViewModel.currentLocation!.latitude
+                  : hotspot.latitude),
+              (_fishingMapsViewModel.currentLocation!.longitude <
+                      hotspot.longitude
+                  ? _fishingMapsViewModel.currentLocation!.longitude
+                  : hotspot.longitude),
+            ),
+            northeast: LatLng(
+              (_fishingMapsViewModel.currentLocation!.latitude >
+                      hotspot.latitude
+                  ? _fishingMapsViewModel.currentLocation!.latitude
+                  : hotspot.latitude),
+              (_fishingMapsViewModel.currentLocation!.longitude >
+                      hotspot.longitude
+                  ? _fishingMapsViewModel.currentLocation!.longitude
+                  : hotspot.longitude),
+            ),
+          ),
+          50, // Padding
+        ),
+      );
+    } else {
+      _showErrorSnackbar('Failed to calculate optimized route.');
+    }
+
+    setState(() {
+      _isRouteLoading = false;
+    });
+  }
+
+  void _moveToCurrentLocation() {
+    if (_fishingMapsViewModel.currentLocation != null &&
+        _mapController != null) {
+      _mapController!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: _fishingMapsViewModel.currentLocation!,
+            zoom: 12,
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<BoatType?> _showBoatSelectionDialog() async {
+    return showDialog<BoatType>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            'Select Your Boat Type',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children:
+                  BoatType.getCommonTamilNaduBoats().map((boat) {
+                    return Card(
+                      elevation: 2,
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                      child: ListTile(
+                        title: Text(
+                          boat.name,
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(boat.description),
+                        trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: () {
+                          Navigator.pop(context, boat);
+                        },
+                      ),
+                    );
+                  }).toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -174,18 +418,42 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
           // Google Map
           Consumer<FishingMapsViewModel>(
             builder: (context, viewModel, child) {
+              if (viewModel.currentLocation != null &&
+                  _currentPosition != viewModel.currentLocation) {
+                _currentPosition = viewModel.currentLocation;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _moveToCurrentLocation();
+                });
+              }
               return GoogleMap(
                 onMapCreated: (GoogleMapController controller) {
                   _mapController = controller;
+
+                  if (viewModel.currentLocation != null) {
+                    Future.delayed(Duration(milliseconds: 100), () {
+                      controller.animateCamera(
+                        CameraUpdate.newCameraPosition(
+                          CameraPosition(
+                            target: viewModel.currentLocation!,
+                            zoom: _currentZoom,
+                          ),
+                        ),
+                      );
+                    });
+                  }
+                },
+                onCameraMove: (CameraPosition position) {
+                  _currentZoom = position.zoom;
                 },
                 initialCameraPosition: CameraPosition(
                   target:
-                      _currentPosition ?? LatLng(7.84725004878, 77.5753854671),
-                  zoom: 10,
+                      viewModel.currentLocation ??
+                      LatLng(7.84725004878, 77.5753854671),
+                  zoom: _currentZoom,
                 ),
                 markers: _markers,
                 circles: _circles,
-                polylines: viewModel.eezPolylines,
+                polylines: {...viewModel.eezPolylines, ..._routePolylines},
                 myLocationEnabled: true,
                 myLocationButtonEnabled: false,
                 mapType: MapType.hybrid,
@@ -213,7 +481,13 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
                   child: Row(
                     children: [
                       GestureDetector(
-                        onTap: () => Navigator.pop(context),
+                        onTap: () {
+                          setState(() {
+                            _optimizedRoute = null;
+                            _routePolylines.clear();
+                          });
+                          Navigator.pop(context);
+                        },
                         child: Container(
                           padding: EdgeInsets.all(12),
                           decoration: BoxDecoration(
@@ -280,7 +554,7 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
                     child: Row(
                       children: [
                         lottie.Lottie.asset(
-                          'assets/animations/warning.json', // Ensure this path is correct
+                          'assets/animations/warning.json',
                           width: 50,
                           height: 50,
                         ),
@@ -315,94 +589,306 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
             ),
           ),
 
-          // Find Hotspots Button
-          Positioned(
-            bottom: 100,
-            left: 20,
-            right: 20,
-            child: AnimatedBuilder(
-              animation: _pulseAnimation,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale:
-                      _fishingMapsViewModel.isLoading
-                          ? (1.0 + _pulseAnimation.value * 0.1)
-                          : 1.0,
+          // Route Details Card
+          if (_optimizedRoute != null && _showRouteDetailsCard)
+            Positioned(
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                color: Colors.black.withOpacity(0.3), // Optional overlay
+                child: Center(
                   child: Container(
-                    height: 60,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.blue[400]!, Colors.blue[600]!],
-                      ),
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.blue.withOpacity(0.3),
-                          blurRadius: 20,
-                          offset: Offset(0, 8),
-                        ),
-                      ],
+                    constraints: BoxConstraints(
+                      maxWidth: 320,
+                      maxHeight: MediaQuery.of(context).size.height * 0.8,
                     ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(30),
-                        onTap:
-                            _fishingMapsViewModel.isLoading
-                                ? null
-                                : _findHotspots,
-                        child: Center(
-                          child:
-                              _fishingMapsViewModel.isLoading
-                                  ? Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                Colors.white,
-                                              ),
-                                        ),
+                    margin: EdgeInsets.all(20),
+                    child: Card(
+                      elevation: 8,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        mainAxisSize:
+                            MainAxisSize.min, // This makes the card fit content
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Optimized Route',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blue[800],
                                       ),
-                                      SizedBox(width: 12),
-                                      Text(
-                                        'Finding Hotspots...',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.close,
+                                        color: Colors.grey,
                                       ),
-                                    ],
-                                  )
-                                  : Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.search, color: Colors.white),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'Find Fishing Hotspots',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
+                                      padding: EdgeInsets.zero,
+                                      constraints: BoxConstraints(),
+                                      onPressed: () {
+                                        setState(() {
+                                          _showRouteDetailsCard = false;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.directions,
+                                      color: Colors.blue,
+                                      size: 20,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Distance: ${_optimizedRoute!['distance_km'].toStringAsFixed(2)} km',
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.access_time,
+                                      color: Colors.blue,
+                                      size: 20,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Time: ${_optimizedRoute!['estimated_time_hours'].toStringAsFixed(2)} hrs',
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                  ],
+                                ),
+                                if (_optimizedRoute!['fuel_saving_tips']
+                                    .isNotEmpty) ...[
+                                  SizedBox(height: 16),
+                                  Text(
+                                    'Fuel Saving Tips:',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey[800],
+                                    ),
                                   ),
-                        ),
+                                  SizedBox(height: 8),
+                                ],
+                              ],
+                            ),
+                          ),
+                          // Scrollable content for fuel saving tips if they're long
+                          if (_optimizedRoute!['fuel_saving_tips'].isNotEmpty)
+                            Flexible(
+                              child: SingleChildScrollView(
+                                padding: EdgeInsets.symmetric(horizontal: 16),
+                                child: Column(
+                                  children: [
+                                    ...(_optimizedRoute!['fuel_saving_tips']
+                                            as List)
+                                        .map(
+                                          (tip) => Padding(
+                                            padding: EdgeInsets.only(bottom: 8),
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Icon(
+                                                  Icons.lightbulb_outline,
+                                                  size: 16,
+                                                  color: Colors.green,
+                                                ),
+                                                SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Text(
+                                                    tip,
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.grey[700],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                    SizedBox(height: 16), // Bottom padding
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ),
-                );
-              },
+                ),
+              ),
             ),
-          ),
-
+          // Find Hotspots Button
+          if (_optimizedRoute == null)
+            Positioned(
+              bottom: 100,
+              left: 20,
+              right: 20,
+              child: AnimatedBuilder(
+                animation: _pulseAnimation,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale:
+                        _fishingMapsViewModel.isLoading || _isRouteLoading
+                            ? (1.0 + _pulseAnimation.value * 0.1)
+                            : 1.0,
+                    child: Container(
+                      height: 60,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.blue[400]!, Colors.blue[600]!],
+                        ),
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.blue.withOpacity(0.3),
+                            blurRadius: 20,
+                            offset: Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(30),
+                          onTap:
+                              _fishingMapsViewModel.isLoading || _isRouteLoading
+                                  ? null
+                                  : _findHotspots,
+                          child: Center(
+                            child:
+                                _fishingMapsViewModel.isLoading ||
+                                        _isRouteLoading
+                                    ? Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  Colors.white,
+                                                ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 12),
+                                        Text(
+                                          'Processing...',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                    : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.search, color: Colors.white),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'Find Fishing Hotspots',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          // Close Route Button
+          if (_optimizedRoute != null && !_showRouteDetailsCard)
+            Positioned(
+              bottom: 100,
+              left: 20,
+              right: 20,
+              child: Container(
+                height: 60,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.red[400]!,
+                      Colors.red[600]!,
+                    ], // Red gradient for "Close"
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.red.withOpacity(0.3),
+                      blurRadius: 20,
+                      offset: Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(30),
+                    onTap: () {
+                      setState(() {
+                        _optimizedRoute = null;
+                        _routePolylines.clear();
+                        _showRouteDetailsCard = false;
+                      });
+                    },
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.close, color: Colors.white),
+                          SizedBox(width: 8),
+                          Text(
+                            'Close Route',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          Positioned(bottom: 250, right: 20, child: _buildZoomControls()),
           // My Location Button
           Positioned(
             bottom: 180,
@@ -424,7 +910,8 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
           ),
 
           // Hotspots Legend
-          if (_fishingMapsViewModel.hotspots.isNotEmpty)
+          if (_fishingMapsViewModel.hotspots.isNotEmpty &&
+              _optimizedRoute == null)
             Positioned(top: 100, right: 20, child: _buildHotspotsLegend()),
         ],
       ),
@@ -489,7 +976,7 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min, // Keep this as min
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Handle bar
           Container(
@@ -617,12 +1104,7 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
                           borderRadius: BorderRadius.circular(25),
                           onTap: () {
                             Navigator.pop(context);
-                            _mapController?.animateCamera(
-                              CameraUpdate.newLatLngZoom(
-                                LatLng(hotspot.latitude, hotspot.longitude),
-                                15,
-                              ),
-                            );
+                            _navigateToHotspot(hotspot);
                           },
                           child: Center(
                             child: Text(
