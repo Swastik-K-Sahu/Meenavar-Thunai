@@ -1,7 +1,7 @@
 // lib/widgets/product_card.dart
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
-import '../../models/sustainable_prod.dart';
+import '../../../theme/app_colors.dart';
+import '../../../models/sustainable_prod.dart';
 
 class ProductCard extends StatelessWidget {
   final SustainableProduct product;

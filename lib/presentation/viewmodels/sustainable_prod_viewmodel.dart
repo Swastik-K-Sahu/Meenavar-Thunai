@@ -1,4 +1,3 @@
-// lib/viewmodels/sustainable_products_viewmodel.dart
 import 'package:flutter/material.dart';
 import '../../models/sustainable_prod.dart';
 import '../../../data/sustainable_prod_data.dart';
@@ -10,8 +9,6 @@ class SustainableProductsViewModel extends ChangeNotifier {
   List<String> categories = [];
   String? selectedCategory;
 
-  // No points logic in ViewModel for MVP
-
   SustainableProductsViewModel() {
     _loadProducts();
   }
@@ -19,7 +16,6 @@ class SustainableProductsViewModel extends ChangeNotifier {
   void _loadProducts() {
     _products = SustainableProductsData.getSustainableProducts();
 
-    // Extract unique categories
     Set<String> uniqueCategories = {'All'};
     for (var product in _products) {
       uniqueCategories.add(product.category);

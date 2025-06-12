@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../presentation/viewmodels/fish_catch_viewmodel.dart';
+import '../../viewmodels/fish_catch_viewmodel.dart';
 
 class SustainabilityAlertDialog extends StatelessWidget {
   final SustainabilityCheck sustainabilityCheck;

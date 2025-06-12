@@ -4,7 +4,7 @@ import 'package:meenavar_thunai/presentation/views/weather/ocean_data_widget.dar
 import 'dart:math' as math;
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_styles.dart';
-import '../../../models/weather_data.dart'; // Import the WeatherData class from the models file
+import '../../../models/weather_data.dart';
 
 class WeatherDetailScreen extends StatelessWidget {
   final WeatherData weatherData;
@@ -45,9 +45,9 @@ class WeatherDetailScreen extends StatelessWidget {
 
   Color _getBackgroundColor(bool isDay) {
     if (isDay) {
-      return const Color(0xFFE3F2FD); // Light blue for day
+      return const Color(0xFFE3F2FD);
     } else {
-      return const Color(0xFF1A1A2E); // Dark blue for night
+      return const Color(0xFF1A1A2E);
     }
   }
 
@@ -125,13 +125,10 @@ class WeatherDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 140, // Increased height to accommodate content
+            height: 140,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: math.min(
-                weatherData.hourlyTimes.length,
-                24,
-              ), // Limit to 24 hours for performance
+              itemCount: math.min(weatherData.hourlyTimes.length, 24),
               itemBuilder: (context, index) {
                 final time = DateTime.parse(weatherData.hourlyTimes[index]);
                 final temp = weatherData.hourlyTemperatures[index];
@@ -139,21 +136,19 @@ class WeatherDetailScreen extends StatelessWidget {
 
                 return Container(
                   margin: const EdgeInsets.only(right: 16),
-                  width: 36, // Fixed width to prevent overflow
+                  width: 36,
                   child: Column(
-                    mainAxisSize:
-                        MainAxisSize.min, // Important: minimize column size
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         '${temp.round()}°',
                         style: AppStyles.bodyMedium.copyWith(
                           fontWeight: FontWeight.bold,
-                          fontSize: 12, // Slightly smaller text
+                          fontSize: 12,
                         ),
                       ),
-                      const SizedBox(height: 6), // Reduced spacing
+                      const SizedBox(height: 6),
                       Expanded(
-                        // Use Expanded to take available space
                         child: Container(
                           width: 4,
                           decoration: BoxDecoration(
@@ -173,12 +168,12 @@ class WeatherDetailScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 6), // Reduced spacing
+                      const SizedBox(height: 6),
                       Text(
                         '$hour:00',
                         style: AppStyles.bodySmall.copyWith(
                           color: Colors.grey[600],
-                          fontSize: 10, // Smaller text
+                          fontSize: 10,
                         ),
                       ),
                     ],
@@ -437,11 +432,8 @@ class WindDirectionPainter extends CustomPainter {
           ..color = Colors.grey[300]!
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2;
-
-    // Draw outer circle
     canvas.drawCircle(center, radius, paint);
 
-    // Draw direction markers
     paint.strokeWidth = 1;
     for (int i = 0; i < 8; i++) {
       final angle = i * 45 * math.pi / 180;
@@ -462,8 +454,6 @@ class WindDirectionPainter extends CustomPainter {
       center.dx + arrowLength * math.cos(arrowAngle),
       center.dy + arrowLength * math.sin(arrowAngle),
     );
-
-    // Draw arrow line
     canvas.drawLine(
       center,
       arrowEnd,
@@ -473,7 +463,6 @@ class WindDirectionPainter extends CustomPainter {
         ..style = PaintingStyle.stroke,
     );
 
-    // Draw arrow head
     final arrowHeadPaint =
         Paint()
           ..color = Colors.blue[600]!
@@ -497,7 +486,6 @@ class SunProgressPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height);
     final radius = size.width / 2 - 20;
 
-    // Draw background arc
     final backgroundPaint =
         Paint()
           ..color = Colors.grey[300]!
@@ -512,7 +500,6 @@ class SunProgressPainter extends CustomPainter {
       backgroundPaint,
     );
 
-    // Draw progress arc
     final progressPaint =
         Paint()
           ..color = isDay ? Colors.orange : Colors.indigo[400]!
@@ -528,7 +515,6 @@ class SunProgressPainter extends CustomPainter {
       progressPaint,
     );
 
-    // Draw sun position
     final sunAngle = math.pi + (math.pi * progress);
     final sunPosition = Offset(
       center.dx + radius * math.cos(sunAngle),

@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import '../../viewmodels/fish_catch_viewmodel.dart';
-import '../../../core/widgets/sustainability_alert.dart';
-import '../../../core/widgets/catch_detail_card.dart';
+import '../../widgets/fish_catch/sustainability_alert.dart';
+import '../../widgets/fish_catch/catch_detail_card.dart';
 
 class FishCatchScreen extends StatefulWidget {
   const FishCatchScreen({super.key});
@@ -21,13 +21,11 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
   final TextEditingController _quantityController = TextEditingController();
   String? _selectedNetType;
 
-  // Add a loading state
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    // Use addPostFrameCallback to ensure context is available and avoid rebuilding during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
@@ -35,7 +33,6 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
 
   // Centralized data loading function
   Future<void> _loadData() async {
-    // Set loading state to true
     if (mounted) {
       setState(() {
         _isLoading = true;
@@ -45,13 +42,10 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
     final User? currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
       final viewModel = Provider.of<FishCatchViewModel>(context, listen: false);
-      // Load both recent catches and monthly data
       await viewModel.loadCatches(currentUser.uid);
       await viewModel.loadMonthlyData(currentUser.uid);
     } else {
-      // Handle case where user is not logged in
       print('User not logged in. Cannot load fish catches.');
-      // Optionally show a message to the user
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please log in to view your catches.')),
@@ -59,7 +53,6 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
       }
     }
 
-    // Set loading state to false after data is loaded
     if (mounted) {
       setState(() {
         _isLoading = false;
@@ -85,7 +78,6 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
         const SnackBar(content: Text('Logging fish catch, please wait...')),
       );
       try {
-        // Add catch
         FishCatchResult result = await viewModel.addCatch(
           userId: currentUser.uid,
           fishSpecies: _selectedFishSpecies!,
@@ -95,14 +87,12 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
         ScaffoldMessenger.of(context).clearSnackBars();
 
         if (result.success) {
-          // Reset form
           setState(() {
             _selectedFishSpecies = null;
             _quantityController.clear();
             _selectedNetType = null;
           });
 
-          // Show sustainability alert if there are warnings
           if (result.sustainabilityCheck != null &&
               result.sustainabilityCheck!.warnings.isNotEmpty) {
             showDialog(
@@ -113,7 +103,6 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
                   ),
             );
           } else {
-            // Show success message
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
@@ -124,7 +113,6 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
             );
           }
         } else {
-          // Show error message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Failed to log catch: ${result.error}'),
@@ -224,9 +212,7 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
               ElevatedButton(
                 onPressed: () {
                   _submitCatch(context);
-                  Navigator.pop(
-                    context,
-                  ); // Dismiss the dialog after submission attempt
+                  Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
@@ -305,8 +291,6 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
   }
 
   Widget _buildMonthlyReport(FishCatchViewModel viewModel) {
-    // Check if _monthlyCatches is null or empty before calculating total quantity
-    // and endangered count to avoid potential errors if data hasn't loaded yet.
     int monthlyEndangeredCount = viewModel.monthlyEndangeredCount;
     double monthlyTotalQuantity = viewModel.monthlyTotalQuantity;
 
@@ -348,7 +332,7 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
               _buildIndicator(
                 title: 'Endangered Species Catch',
                 icon: Icons.warning,
-                current: monthlyEndangeredCount, // Use calculated value
+                current: monthlyEndangeredCount,
                 maximum: 10,
                 threshold: 6,
               ),
@@ -356,7 +340,7 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
               _buildIndicator(
                 title: 'Total Fish Catch (Quintal)',
                 icon: Icons.catching_pokemon,
-                current: monthlyTotalQuantity.toInt(), // Use calculated value
+                current: monthlyTotalQuantity.toInt(),
                 maximum: 100,
                 threshold: 60,
               ),
@@ -378,7 +362,6 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
     bool isOverThreshold = current > threshold;
     Color indicatorColor = isOverThreshold ? Colors.red : Colors.green;
     double progress = isExceeded ? 1.0 : current / maximum;
-    // Handle division by zero for progress if maximum is 0
     if (maximum == 0) progress = 0.0;
 
     return Container(
@@ -484,7 +467,6 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Monthly Report Section
                 _buildMonthlyReport(viewModel),
 
                 // Latest Fish Catches Section

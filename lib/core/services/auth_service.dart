@@ -5,10 +5,8 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  // Get current user
   User? get currentUser => _auth.currentUser;
 
-  // Stream of auth state changes
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   // Register with email and password
@@ -33,28 +31,6 @@ class AuthService {
       final UserCredential result = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
-      );
-      return result.user;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  // Google Sign-In
-  Future<User?> signInWithGoogle() async {
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null;
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      final UserCredential result = await _auth.signInWithCredential(
-        credential,
       );
       return result.user;
     } catch (e) {

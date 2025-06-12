@@ -1,7 +1,6 @@
-// lib/widgets/sustainability_badge.dart
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
-import '../services/firebase_service.dart';
+import '../../../theme/app_colors.dart';
+import '../../../core/services/firebase_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class SustainabilityBadge extends StatefulWidget {
@@ -19,7 +18,7 @@ class _SustainabilityBadgeState extends State<SustainabilityBadge> {
   double _progressFactor = 0.0;
 
   final int _silverFisherThreshold = 1000;
-  final int _goldFisherThreshold = 2000; // Example for a higher level
+  final int _goldFisherThreshold = 2000;
 
   @override
   void initState() {

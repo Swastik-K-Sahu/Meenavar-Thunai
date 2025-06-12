@@ -1,9 +1,4 @@
-enum MessageType {
-  user,
-  ai,
-  system,
-  error,
-}
+enum MessageType { user, ai, system, error }
 
 class ChatMessage {
   final String id;
@@ -12,7 +7,7 @@ class ChatMessage {
   final DateTime timestamp;
   final bool isLoading;
   final Map<String, dynamic>? metadata;
-  
+
   ChatMessage({
     required this.id,
     required this.content,
@@ -21,8 +16,7 @@ class ChatMessage {
     this.isLoading = false,
     this.metadata,
   }) : timestamp = timestamp ?? DateTime.now();
-  
-  // Copy with method for updating messages
+
   ChatMessage copyWith({
     String? id,
     String? content,
@@ -40,8 +34,7 @@ class ChatMessage {
       metadata: metadata ?? this.metadata,
     );
   }
-  
-  // Factory constructors for different message types
+
   factory ChatMessage.user(String content, {Map<String, dynamic>? metadata}) {
     return ChatMessage(
       id: _generateId(),
@@ -50,7 +43,7 @@ class ChatMessage {
       metadata: metadata,
     );
   }
-  
+
   factory ChatMessage.ai(String content, {Map<String, dynamic>? metadata}) {
     return ChatMessage(
       id: _generateId(),
@@ -59,7 +52,7 @@ class ChatMessage {
       metadata: metadata,
     );
   }
-  
+
   factory ChatMessage.system(String content, {Map<String, dynamic>? metadata}) {
     return ChatMessage(
       id: _generateId(),
@@ -68,7 +61,7 @@ class ChatMessage {
       metadata: metadata,
     );
   }
-  
+
   factory ChatMessage.loading({String? customMessage}) {
     return ChatMessage(
       id: 'loading_${_generateId()}',
@@ -78,42 +71,39 @@ class ChatMessage {
       metadata: {'isTyping': true},
     );
   }
-  
+
   factory ChatMessage.error(String error, {Map<String, dynamic>? metadata}) {
     return ChatMessage(
       id: _generateId(),
       content: error,
       type: MessageType.error,
-      metadata: {
-        'isError': true,
-        ...?metadata,
-      },
+      metadata: {'isError': true, ...?metadata},
     );
   }
-  
+
   // Generate unique ID
   static String _generateId() {
     return '${DateTime.now().millisecondsSinceEpoch}_${DateTime.now().microsecond}';
   }
-  
+
   // Utility getters
   bool get isFromUser => type == MessageType.user;
   bool get isFromAI => type == MessageType.ai;
   bool get isSystemMessage => type == MessageType.system;
   bool get isErrorMessage => type == MessageType.error;
-  
+
   // Get formatted timestamp
   String get formattedTime {
     final hour = timestamp.hour.toString().padLeft(2, '0');
     final minute = timestamp.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
   }
-  
-  // Get relative time (e.g., "2 minutes ago")
+
+  // Get relative time
   String get relativeTime {
     final now = DateTime.now();
     final difference = now.difference(timestamp);
-    
+
     if (difference.inSeconds < 60) {
       return 'Just now';
     } else if (difference.inMinutes < 60) {
@@ -124,21 +114,18 @@ class ChatMessage {
       return '${difference.inDays}d ago';
     }
   }
-  
+
   // Check if message contains specific content types
   bool get hasLinks => content.contains(RegExp(r'https?://'));
-  bool get hasEmail => content.contains(RegExp(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'));
+  bool get hasEmail => content.contains(
+    RegExp(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'),
+  );
   bool get hasPhoneNumber => content.contains(RegExp(r'\b\d{10,}\b'));
-  
-  // Get word count
+
   int get wordCount => content.trim().split(RegExp(r'\s+')).length;
-  
-  // Get character count
   int get characterCount => content.length;
-  
-  // Check if message is long
   bool get isLongMessage => wordCount > 100 || characterCount > 500;
-  
+
   // Convert to Map for storage/serialization
   Map<String, dynamic> toMap() {
     return {
@@ -150,8 +137,8 @@ class ChatMessage {
       'metadata': metadata,
     };
   }
-  
-  // Create from Map (for loading from storage)
+
+  // Create from Map
   factory ChatMessage.fromMap(Map<String, dynamic> map) {
     return ChatMessage(
       id: map['id'] as String,
@@ -165,18 +152,18 @@ class ChatMessage {
       metadata: map['metadata'] as Map<String, dynamic>?,
     );
   }
-  
+
   @override
   String toString() {
     return 'ChatMessage(id: $id, content: ${content.length > 50 ? '${content.substring(0, 50)}...' : content}, type: $type, timestamp: $timestamp, isLoading: $isLoading)';
   }
-  
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is ChatMessage && other.id == id;
   }
-  
+
   @override
   int get hashCode => id.hashCode;
 }

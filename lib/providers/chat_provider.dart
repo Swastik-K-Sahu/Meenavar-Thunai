@@ -70,16 +70,12 @@ class ChatProvider extends ChangeNotifier {
 
     _error = null;
 
-    // Add user message
     final userMessage = ChatMessage.user(content.trim());
     _addMessage(userMessage);
-
-    // Use only global loading state - no loading message
     _isLoading = true;
     notifyListeners();
 
     try {
-      // Prepare conversation context more efficiently
       final conversationHistory =
           _messages
               .where(
@@ -87,9 +83,7 @@ class ChatProvider extends ChangeNotifier {
                     msg.type != MessageType.system &&
                     msg.type != MessageType.error,
               )
-              .where(
-                (msg) => msg.id != userMessage.id,
-              ) // Exclude current message
+              .where((msg) => msg.id != userMessage.id)
               .takeLast(10) // Last 10 messages for context
               .map(
                 (msg) =>
@@ -103,10 +97,7 @@ class ChatProvider extends ChangeNotifier {
         content,
       );
 
-      // Add AI response directly
       _addMessage(ChatMessage.ai(response));
-
-      // Clear any previous errors
       _error = null;
     } catch (e) {
       _error = e.toString();
@@ -148,12 +139,10 @@ class ChatProvider extends ChangeNotifier {
   }
 
   Future<void> _sendMessageInternal(String content) async {
-    // Use only global loading state - no loading message
     _isLoading = true;
     notifyListeners();
 
     try {
-      // Prepare conversation context
       final conversationHistory =
           _messages
               .where(
@@ -196,8 +185,6 @@ class ChatProvider extends ChangeNotifier {
   }
 
   void copyMessage(String content) {
-    // This would typically use Clipboard.setData in a real app
-    // For now, we'll just show a notification or similar
     print('Message copied: $content');
   }
 

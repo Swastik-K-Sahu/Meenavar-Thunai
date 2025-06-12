@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../../theme/app_colors.dart';
-import '../../../../theme/app_styles.dart';
-import '../../presentation/views/fishing_ban/fishing_ban_info_screen.dart';
-import '../services/fishing_ban_service.dart';
+import '../../../../../theme/app_colors.dart';
+import '../../../../../theme/app_styles.dart';
+import '../../views/fishing_ban/fishing_ban_info_screen.dart';
+import '../../../core/services/fishing_ban_service.dart';
 
 class FishingBanIndicator extends StatelessWidget {
   const FishingBanIndicator({super.key});

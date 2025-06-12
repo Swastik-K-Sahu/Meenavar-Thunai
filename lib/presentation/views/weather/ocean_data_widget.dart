@@ -137,7 +137,6 @@ class _OceanDataWidgetState extends State<OceanDataWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header
         Row(
           children: [
             Icon(Icons.waves, color: Colors.blue[600], size: 24),
@@ -292,7 +291,6 @@ class _OceanDataWidgetState extends State<OceanDataWidget> {
         ),
         const SizedBox(height: 12),
 
-        // Current value display
         Row(
           children: [
             Text(
@@ -417,14 +415,8 @@ class ChartPainter extends CustomPainter {
     for (int i = 1; i < points.length; i++) {
       linePath.lineTo(points[i].dx, points[i].dy);
     }
-
-    // Draw filled area
     canvas.drawPath(path, paint);
-
-    // Draw line
     canvas.drawPath(linePath, linePaint);
-
-    // Draw points
     for (final point in points) {
       canvas.drawCircle(point, 3, pointPaint);
     }

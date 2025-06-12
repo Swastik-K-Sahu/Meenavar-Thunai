@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../viewmodels/sustainable_prod_viewmodel.dart';
-import '../../../core/widgets/sustainability_badge.dart';
-import '../../../core/widgets/product_card.dart';
+import '../../widgets/sustainable_prod/sustainability_badge.dart';
+import '../../widgets/sustainable_prod/product_card.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SustainableProductsScreen extends StatelessWidget {
@@ -22,7 +22,6 @@ class SustainableProductsScreen extends StatelessWidget {
             ),
             body: Column(
               children: [
-                // Static sustainability points badge for MVP
                 const SustainabilityBadge(),
 
                 // Category filter chips
@@ -242,7 +241,6 @@ class SustainableProductsScreen extends StatelessWidget {
                           final url = Uri.parse(product.buyLink);
                           if (await canLaunchUrl(url)) {
                             await launchUrl(url);
-                            // Dummy to add points in MVP version
                             // Just showing a snackbar
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(

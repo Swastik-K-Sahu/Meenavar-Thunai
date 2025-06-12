@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:meenavar_thunai/models/chat_message.dart';
 
-
 class MessageBubble extends StatelessWidget {
   final ChatMessage message;
   final VoidCallback? onDelete;
@@ -20,18 +19,18 @@ class MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: message.isFromUser 
-          ? MainAxisAlignment.end 
-          : MainAxisAlignment.start,
+      mainAxisAlignment:
+          message.isFromUser ? MainAxisAlignment.end : MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (!message.isFromUser) _buildAvatar(context),
         if (!message.isFromUser) const SizedBox(width: 8),
         Flexible(
           child: Column(
-            crossAxisAlignment: message.isFromUser 
-                ? CrossAxisAlignment.end 
-                : CrossAxisAlignment.start,
+            crossAxisAlignment:
+                message.isFromUser
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start,
             children: [
               _buildMessageBubble(context),
               const SizedBox(height: 4),
@@ -48,7 +47,7 @@ class MessageBubble extends StatelessWidget {
   Widget _buildAvatar(BuildContext context) {
     IconData icon;
     Color backgroundColor;
-    
+
     switch (message.type) {
       case MessageType.ai:
         icon = Icons.smart_toy_outlined;
@@ -77,7 +76,8 @@ class MessageBubble extends StatelessWidget {
       child: Icon(
         icon,
         size: 18,
-        color: message.isErrorMessage ? Colors.red.shade700 : Colors.blue.shade700,
+        color:
+            message.isErrorMessage ? Colors.red.shade700 : Colors.blue.shade700,
       ),
     );
   }
@@ -92,11 +92,7 @@ class MessageBubble extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: const Icon(
-        Icons.person,
-        size: 18,
-        color: Colors.white,
-      ),
+      child: const Icon(Icons.person, size: 18, color: Colors.white),
     );
   }
 
@@ -158,20 +154,20 @@ class MessageBubble extends StatelessWidget {
     if (message.isLoading) {
       return _buildLoadingContent();
     }
-
-    // Check if content might be markdown
-    bool hasMarkdown = message.content.contains('**') || 
-                      message.content.contains('*') || 
-                      message.content.contains('`') ||
-                      message.content.contains('#') ||
-                      message.content.contains('-') ||
-                      message.content.contains('1.');
+    bool hasMarkdown =
+        message.content.contains('**') ||
+        message.content.contains('*') ||
+        message.content.contains('`') ||
+        message.content.contains('#') ||
+        message.content.contains('-') ||
+        message.content.contains('1.');
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: hasMarkdown && !message.isFromUser
-          ? _buildMarkdownContent(context)
-          : _buildTextContent(context),
+      child:
+          hasMarkdown && !message.isFromUser
+              ? _buildMarkdownContent(context)
+              : _buildTextContent(context),
     );
   }
 
@@ -179,10 +175,11 @@ class MessageBubble extends StatelessWidget {
     return SelectableText(
       message.content,
       style: TextStyle(
-        color: message.isFromUser 
-            ? Colors.white 
-            : message.isErrorMessage 
-                ? Colors.red.shade700 
+        color:
+            message.isFromUser
+                ? Colors.white
+                : message.isErrorMessage
+                ? Colors.red.shade700
                 : Theme.of(context).colorScheme.onSurface,
         fontSize: 15,
         height: 1.4,
@@ -223,9 +220,7 @@ class MessageBubble extends StatelessWidget {
             height: 16,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Colors.blue.shade600,
-              ),
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
             ),
           ),
           const SizedBox(width: 12),
@@ -248,18 +243,11 @@ class MessageBubble extends StatelessWidget {
       children: [
         Text(
           message.formattedTime,
-          style: TextStyle(
-            color: Colors.grey.shade500,
-            fontSize: 11,
-          ),
+          style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
         ),
         if (message.isLongMessage) ...[
           const SizedBox(width: 8),
-          Icon(
-            Icons.article_outlined,
-            size: 12,
-            color: Colors.grey.shade500,
-          ),
+          Icon(Icons.article_outlined, size: 12, color: Colors.grey.shade500),
         ],
         if (message.isErrorMessage && onRetry != null) ...[
           const SizedBox(width: 8),
@@ -282,40 +270,44 @@ class MessageBubble extends StatelessWidget {
   void _showMessageOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.copy),
-              title: const Text('Copy'),
-              onTap: () {
-                Navigator.pop(context);
-                onCopy?.call();
-              },
+      builder:
+          (context) => Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.copy),
+                  title: const Text('Copy'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    onCopy?.call();
+                  },
+                ),
+                if (!message.isSystemMessage && onDelete != null)
+                  ListTile(
+                    leading: const Icon(Icons.delete, color: Colors.red),
+                    title: const Text(
+                      'Delete',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      onDelete?.call();
+                    },
+                  ),
+                if (message.isErrorMessage && onRetry != null)
+                  ListTile(
+                    leading: const Icon(Icons.refresh),
+                    title: const Text('Retry'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      onRetry?.call();
+                    },
+                  ),
+              ],
             ),
-            if (!message.isSystemMessage && onDelete != null)
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('Delete', style: TextStyle(color: Colors.red)),
-                onTap: () {
-                  Navigator.pop(context);
-                  onDelete?.call();
-                },
-              ),
-            if (message.isErrorMessage && onRetry != null)
-              ListTile(
-                leading: const Icon(Icons.refresh),
-                title: const Text('Retry'),
-                onTap: () {
-                  Navigator.pop(context);
-                  onRetry?.call();
-                },
-              ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 }

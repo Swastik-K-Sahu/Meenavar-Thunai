@@ -34,7 +34,6 @@ class AuthViewModel extends ChangeNotifier {
     required LocalStorageService storageService,
   }) : _authService = authService,
        _storageService = storageService {
-    // Initialize by checking current user
     _initializeAuthState();
   }
 
@@ -77,17 +76,13 @@ class AuthViewModel extends ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      // Register the user with email and password
       final user = await _authService.registerWithEmailAndPassword(
         email,
         password,
       );
 
       if (user != null) {
-        // Update the user's display name
         await user.updateDisplayName(name);
-
-        // Refresh user to get updated data
         await user.reload();
         _user = _authService.currentUser;
 
@@ -114,7 +109,7 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  // Login with email and password - removed rememberMe parameter
+  // Login with email and password
   Future<AuthResult> login(String email, String password) async {
     try {
       _status = AuthStatus.loading;
@@ -143,34 +138,6 @@ class AuthViewModel extends ChangeNotifier {
       _errorMessage = _getMessageFromErrorCode(e.code);
       notifyListeners();
       return AuthResult(success: false, message: _errorMessage);
-    } catch (e) {
-      _status = AuthStatus.error;
-      _errorMessage = e.toString();
-      notifyListeners();
-      return AuthResult(success: false, message: _errorMessage);
-    }
-  }
-
-  // Sign in with Google
-  Future<AuthResult> signInWithGoogle() async {
-    try {
-      _status = AuthStatus.loading;
-      _errorMessage = null;
-      notifyListeners();
-
-      final user = await _authService.signInWithGoogle();
-
-      if (user != null) {
-        _user = user;
-        _status = AuthStatus.authenticated;
-        await _saveUserData(user);
-        notifyListeners();
-        return AuthResult(success: true);
-      } else {
-        _status = AuthStatus.unauthenticated;
-        notifyListeners();
-        return AuthResult(success: false, message: "Google sign in failed");
-      }
     } catch (e) {
       _status = AuthStatus.error;
       _errorMessage = e.toString();

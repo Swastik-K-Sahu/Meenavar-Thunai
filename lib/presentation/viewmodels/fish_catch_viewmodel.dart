@@ -31,13 +31,11 @@ class FishCatchViewModel extends ChangeNotifier {
   final List<String> netTypes = ['Small', 'Medium', 'Large'];
 
   Future<void> loadCatches(String userId) async {
-    // Load recent catches for display
     _catches = await _firebaseService.fetchCatches(userId);
     notifyListeners();
   }
 
   Future<void> loadMonthlyData(String userId) async {
-    // Load monthly catches for report calculation
     _monthlyCatches = await _firebaseService.fetchMonthlyCatches(userId);
     notifyListeners();
   }
@@ -107,7 +105,7 @@ class FishCatchViewModel extends ChangeNotifier {
       await _firebaseService.addFishCatch(userId, newCatch);
 
       // Update both lists
-      _catches.insert(0, newCatch); // Add to front for recent catches
+      _catches.insert(0, newCatch);
 
       // Check if the new catch is from current month before adding to monthly catches
       DateTime now = DateTime.now();
@@ -117,9 +115,7 @@ class FishCatchViewModel extends ChangeNotifier {
       if (timestamp.isAtSameMomentAs(startOfMonth) ||
           timestamp.isAfter(startOfMonth) &&
               timestamp.isBefore(startOfNextMonth)) {
-        _monthlyCatches.add(
-          newCatch,
-        ); // Add to monthly catches only if it's current month
+        _monthlyCatches.add(newCatch);
       }
 
       notifyListeners();

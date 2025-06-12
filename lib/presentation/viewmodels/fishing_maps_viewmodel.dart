@@ -6,7 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart';
 import 'package:vibration/vibration.dart';
 import '../../models/fishing_hotspot.dart';
-import '../../core/services/hotspot_prediction_service.dart';
+import '../../core/services/hotspot_prediction_routing_service.dart';
 import 'package:meenavar_thunai/theme/app_colors.dart';
 
 class FishingMapsViewModel extends ChangeNotifier {
@@ -90,7 +90,6 @@ class FishingMapsViewModel extends ChangeNotifier {
         var geometry = feature['geometry'];
 
         if (geometry['type'] == 'LineString') {
-          // Handle LineString geometry
           List<dynamic> coordinates = geometry['coordinates'];
           List<LatLng> borderPoints =
               coordinates

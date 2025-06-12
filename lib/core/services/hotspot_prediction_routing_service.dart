@@ -66,8 +66,8 @@ class HotspotPredictionService {
     double radiusKm,
   ) {
     List<Map<String, double>> points = [];
-    const int numberOfPoints = 3;
-    const double earthRadius = 6371; // km
+    const int numberOfPoints = 2;
+    const double earthRadius = 6371;
 
     for (int i = 0; i < numberOfPoints; i++) {
       double angle = (i * 2 * pi) / numberOfPoints;
@@ -140,7 +140,7 @@ class HotspotPredictionService {
     if (weather == null || ocean == null) return null;
 
     try {
-      final prompt = _buildGeminiPrompt(lat, lng, weather, ocean);
+      final prompt = _buildHotspotPredPrompt(lat, lng, weather, ocean);
 
       final response = await http.post(
         Uri.parse(
@@ -171,7 +171,7 @@ class HotspotPredictionService {
     return null;
   }
 
-  String _buildGeminiPrompt(
+  String _buildHotspotPredPrompt(
     double lat,
     double lng,
     WeatherData weather,
@@ -300,7 +300,7 @@ class HotspotPredictionService {
     // Get current time in IST
     final istOffset = Duration(hours: 5, minutes: 30); // IST is UTC+5:30
     final currentTime = DateTime.now().toUtc().add(istOffset);
-    final currentHour = currentTime.hour; // Get the hour (0-23)
+    final currentHour = currentTime.hour;
 
     double currentWindDirection =
         weather.hourlyWindDirection.length > currentHour

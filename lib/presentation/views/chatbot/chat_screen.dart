@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/chat_provider.dart';
-import '../../../core/widgets/message_input.dart';
-import '../../../core/widgets/typing_indicator.dart';
-import '../../../core/widgets/message_bubble.dart';
+import '../../widgets/chatbot/message_input.dart';
+import '../../widgets/chatbot/typing_indicator.dart';
+import '../../widgets/chatbot/message_bubble.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});

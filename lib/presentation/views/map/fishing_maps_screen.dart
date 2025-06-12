@@ -5,7 +5,7 @@ import 'package:meenavar_thunai/secrets.dart';
 import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart' as lottie;
 import '../../../models/fishing_hotspot.dart';
-import '../../../core/services/hotspot_prediction_service.dart';
+import '../../../core/services/hotspot_prediction_routing_service.dart';
 import '../../viewmodels/fishing_maps_viewmodel.dart';
 import '../../../data/boat_type.dart';
 
@@ -22,16 +22,15 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
   LatLng? _currentPosition;
   final Set<Marker> _markers = {};
   final Set<Circle> _circles = {};
-  final Set<Polyline> _routePolylines = {}; // For optimized route
+  final Set<Polyline> _routePolylines = {};
   List<FishingHotspot> _hotspots = [];
-  Map<String, dynamic>? _optimizedRoute; // Store route data
+  Map<String, dynamic>? _optimizedRoute;
   bool _isRouteLoading = false;
   bool _showRouteDetailsCard = false;
   late FishingMapsViewModel _fishingMapsViewModel;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-  double _currentZoom = 10.0; // Track current zoom level
-
+  double _currentZoom = 10.0;
   Future<void> _zoomIn() async {
     if (_mapController != null) {
       _currentZoom = (_currentZoom + 1).clamp(1.0, 20.0);
@@ -101,9 +100,7 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
 
     print('Hotspots found: ${_fishingMapsViewModel.hotspots.length}');
     setState(() {
-      _hotspots =
-          _fishingMapsViewModel
-              .hotspots; // Store hotspots locally for debugging
+      _hotspots = _fishingMapsViewModel.hotspots;
       _circles.clear();
       _markers.clear();
       _createHotspotMarkers();
@@ -200,7 +197,7 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
         Circle(
           circleId: CircleId('circle_$i'),
           center: LatLng(hotspot.latitude, hotspot.longitude),
-          radius: hotspot.radius * 1000, // Convert km to meters
+          radius: hotspot.radius * 1000,
           fillColor: color.withOpacity(0.3),
           strokeColor: color,
           strokeWidth: 2,
@@ -257,7 +254,6 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
   }
 
   Future<void> _navigateToHotspot(FishingHotspot hotspot) async {
-    // Show boat selection dialog
     BoatType? selectedBoat = await _showBoatSelectionDialog();
     if (selectedBoat == null) return;
 
@@ -339,7 +335,7 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
                   : hotspot.longitude),
             ),
           ),
-          50, // Padding
+          50,
         ),
       );
     } else {
@@ -595,7 +591,7 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
               left: 0,
               right: 0,
               child: Container(
-                color: Colors.black.withOpacity(0.3), // Optional overlay
+                color: Colors.black.withOpacity(0.3),
                 child: Center(
                   child: Container(
                     constraints: BoxConstraints(
@@ -609,8 +605,7 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(
-                        mainAxisSize:
-                            MainAxisSize.min, // This makes the card fit content
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Padding(
                             padding: EdgeInsets.all(16),
@@ -691,7 +686,6 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
                               ],
                             ),
                           ),
-                          // Scrollable content for fuel saving tips if they're long
                           if (_optimizedRoute!['fuel_saving_tips'].isNotEmpty)
                             Flexible(
                               child: SingleChildScrollView(
@@ -727,7 +721,7 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
                                           ),
                                         )
                                         .toList(),
-                                    SizedBox(height: 16), // Bottom padding
+                                    SizedBox(height: 16),
                                   ],
                                 ),
                               ),
@@ -906,61 +900,6 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
               child: Icon(Icons.my_location, color: Colors.blue),
             ),
           ),
-
-          // Hotspots Legend
-          if (_fishingMapsViewModel.hotspots.isNotEmpty &&
-              _optimizedRoute == null)
-            Positioned(top: 100, right: 20, child: _buildHotspotsLegend()),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHotspotsLegend() {
-    return Container(
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Hotspot Probability',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-          ),
-          SizedBox(height: 8),
-          _buildLegendItem(Colors.green, '80-100%'),
-          _buildLegendItem(Colors.orange, '60-79%'),
-          _buildLegendItem(Colors.yellow, '40-59%'),
-          _buildLegendItem(Colors.red, '20-39%'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLegendItem(Color color, String label) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          ),
-          SizedBox(width: 6),
-          Text(label, style: TextStyle(fontSize: 10)),
         ],
       ),
     );

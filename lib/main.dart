@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:meenavar_thunai/core/services/hotspot_prediction_service.dart';
+import 'package:meenavar_thunai/core/services/hotspot_prediction_routing_service.dart';
 import 'package:meenavar_thunai/core/utils/firebase_options.dart';
 import 'package:meenavar_thunai/presentation/viewmodels/fishing_maps_viewmodel.dart';
 import 'package:meenavar_thunai/secrets.dart';
@@ -17,7 +17,6 @@ import '/providers/chat_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
