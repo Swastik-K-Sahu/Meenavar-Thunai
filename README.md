@@ -7,10 +7,10 @@
 ## 🌊 Key Features
 
 - 🔥 **Real-Time Weather & Marine Updates**  
-  Stay informed about sea conditions and receive alerts for the 60-day fishing ban period.
+  Stay informed about sea conditions and receive routes and spots based on real-time data.
 
 - 🐠 **AI-Powered Fish Hotspot Predictions**  
-  Predict fish-rich zones using intelligent algorithms to optimize catch success.
+  Predict fish-rich zones using Gemini to optimize catch success.
 
 - 🗺️ **Smart Maps & Maritime Boundaries**  
   Get alerts when nearing maritime borders to avoid unintentional boundary crossings.
@@ -19,13 +19,13 @@
   Create optimized fishing trips with routes based on weather, boundaries, and fish hotspots.
 
 - 📶 **Offline Access**  
-  Access vital features like maps, weather, and alerts during poor connectivity.
+  Access vital features like optimal route and territory alerts during poor connectivity.
 
 - 📝 **Trip Logging & Analysis**  
-  Log your catch post-trip and receive reports on fuel use and prediction success rate.
+  Log your catch post-trip and receive monthly reports for catch level monitoring.
 
 - ♻️ **Sustainability Rewards**  
-  Earn points for eco-friendly practices and redeem them for sustainable gear in the in-app Shop.
+  Earn points for sustainable fishing practices and redeem them for sustainable gear in the in-app Shop.
 
 - 👤 **Multilingual Profile Management**  
   Change language preferences and set emergency contacts with ease.
@@ -34,7 +34,7 @@
 
 ## 📲 Getting Started
 - Add your Google Maps API key in android\app\src\main\AndroidManifest.xml to load Maps screen.
-- Add secrets.dart with APIs for weather and ocean data in lib/ .
+- Add Gemini API Key in secrets.dart, model used = gemini-2.0-flash-lite .
 ### 🔐 Default Admin Login
 > ⚠️ For testing/demo purposes only
 ```bash
