@@ -4,7 +4,7 @@ import 'package:meenavar_thunai/secrets.dart';
 class GeminiService {
   static String apiKey =
       AppSecrets.geminiApiKey; // Gemini API Key in AppSecrets
-  static String modelName = 'gemini-2.5-pro-preview-06-05';
+  static String modelName = 'gemini-2.0-flash-lite';
 
   late final GenerativeModel _model;
 
@@ -20,7 +20,7 @@ class GeminiService {
         temperature: 0.01,
         topK: 40,
         topP: 0.95,
-        maxOutputTokens: 4000,
+        maxOutputTokens: 2000,
         stopSequences: [],
       ),
       safetySettings: [
