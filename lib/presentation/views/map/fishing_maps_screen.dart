@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
 import 'package:meenavar_thunai/secrets.dart';
 import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart' as lottie;
@@ -25,7 +24,6 @@ class _FishingMapsScreenState extends State<FishingMapsScreen>
   final Set<Circle> _circles = {};
   final Set<Polyline> _routePolylines = {}; // For optimized route
   List<FishingHotspot> _hotspots = [];
-  FishingHotspot? _selectedHotspot;
   Map<String, dynamic>? _optimizedRoute; // Store route data
   bool _isRouteLoading = false;
   bool _showRouteDetailsCard = false;

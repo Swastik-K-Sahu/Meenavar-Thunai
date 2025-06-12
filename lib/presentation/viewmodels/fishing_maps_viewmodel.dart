@@ -88,18 +88,48 @@ class FishingMapsViewModel extends ChangeNotifier {
 
       for (var feature in geojsonData['features']) {
         var geometry = feature['geometry'];
-        if (geometry['type'] == 'Polygon' ||
-            geometry['type'] == 'MultiPolygon') {
-          List<dynamic> coordinates =
-              geometry['type'] == 'MultiPolygon'
-                  ? [geometry['coordinates']]
-                  : geometry['coordinates'];
 
+        if (geometry['type'] == 'LineString') {
+          // Handle LineString geometry
+          List<dynamic> coordinates = geometry['coordinates'];
+          List<LatLng> borderPoints =
+              coordinates
+                  .map<LatLng>((point) => LatLng(point[1], point[0]))
+                  .toList();
+
+          parsedBorders.add(borderPoints);
+          newPolylines.add(
+            Polyline(
+              polylineId: PolylineId('eez_${newPolylines.length}'),
+              points: borderPoints,
+              color: AppColors.maritimeBoundaryColor,
+              width: 4,
+            ),
+          );
+        } else if (geometry['type'] == 'Polygon') {
+          List<dynamic> coordinates = geometry['coordinates'];
+          List<LatLng> borderPoints =
+              coordinates[0]
+                  .map<LatLng>((point) => LatLng(point[1], point[0]))
+                  .toList();
+
+          parsedBorders.add(borderPoints);
+          newPolylines.add(
+            Polyline(
+              polylineId: PolylineId('eez_${newPolylines.length}'),
+              points: borderPoints,
+              color: AppColors.maritimeBoundaryColor,
+              width: 4,
+            ),
+          );
+        } else if (geometry['type'] == 'MultiPolygon') {
+          List<dynamic> coordinates = geometry['coordinates'];
           for (var polygon in coordinates) {
             List<LatLng> borderPoints =
                 polygon[0]
                     .map<LatLng>((point) => LatLng(point[1], point[0]))
                     .toList();
+
             parsedBorders.add(borderPoints);
             newPolylines.add(
               Polyline(
@@ -112,6 +142,7 @@ class FishingMapsViewModel extends ChangeNotifier {
           }
         }
       }
+
       _eezBoundaries = parsedBorders;
       _eezPolylines.addAll(newPolylines);
       notifyListeners();
@@ -138,7 +169,7 @@ class FishingMapsViewModel extends ChangeNotifier {
     bool isClose = minDistance <= _proximityThreshold;
 
     if (isClose && !_isBorderProximityWarningActive) {
-      if (await Vibration.hasVibrator() ?? false) {
+      if (await Vibration.hasVibrator()) {
         Vibration.vibrate(duration: 5000);
       }
       print(

@@ -456,12 +456,6 @@ class WindDirectionPainter extends CustomPainter {
       canvas.drawLine(start, end, paint);
     }
 
-    // Draw wind direction arrow
-    final arrowPaint =
-        Paint()
-          ..color = Colors.blue[600]!
-          ..style = PaintingStyle.fill;
-
     final arrowAngle = direction * math.pi / 180 - math.pi / 2;
     final arrowLength = radius - 20;
     final arrowEnd = Offset(
