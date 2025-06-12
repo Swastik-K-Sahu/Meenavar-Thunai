@@ -9,7 +9,7 @@ import '../../../core/widgets/fishing_ban_indicator.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_styles.dart';
 import '../../viewmodels/auth_viewmodel.dart';
-import '../catch_log/fish_catch_screen.dart';
+import '../fish_catch_log/fish_catch_screen.dart';
 import '../map/fishing_maps_screen.dart';
 import '../profile/profile_screen.dart';
 import '../sustainable_products/sustainable_prod_screen.dart';
@@ -60,9 +60,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 // Dummy notifications action
                 Fluttertoast.showToast(
                   msg: "Notifications feature coming soon!",
-                  toastLength: Toast.LENGTH_SHORT,
+                  toastLength: Toast.LENGTH_LONG,
                   gravity: ToastGravity.BOTTOM,
-                  backgroundColor: AppColors.primaryLight,
+                  backgroundColor: AppColors.primaryDark,
                   textColor: Colors.white,
                 );
               },
