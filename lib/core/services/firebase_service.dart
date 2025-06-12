@@ -15,6 +15,7 @@ class FirebaseService {
               .doc(userId)
               .collection('catches')
               .orderBy('timestamp', descending: true)
+              .limit(2)
               .get();
 
       return snapshot.docs
@@ -39,34 +40,6 @@ class FirebaseService {
     } catch (e) {
       print('Error adding fish catch: $e');
       rethrow;
-    }
-  }
-
-  Future<String?> uploadCatchImage(
-    String userId,
-    String catchId,
-    File imageFile,
-  ) async {
-    try {
-      final Reference storageRef = _storage
-          .ref()
-          .child('users')
-          .child(userId)
-          .child('catches')
-          .child('$catchId.jpg');
-
-      final UploadTask uploadTask = storageRef.putFile(
-        imageFile,
-        SettableMetadata(contentType: 'image/jpeg'),
-      );
-
-      final TaskSnapshot snapshot = await uploadTask;
-      final String downloadUrl = await snapshot.ref.getDownloadURL();
-
-      return downloadUrl;
-    } catch (e) {
-      print('Error uploading image: $e');
-      return null;
     }
   }
 }

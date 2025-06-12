@@ -4,7 +4,6 @@ class FishCatchModel {
   final double quantityInQuintal;
   final String netType;
   final DateTime timestamp;
-  final String? imageUrl;
   final bool isSustainable;
   final int pointsAwarded;
 
@@ -14,7 +13,6 @@ class FishCatchModel {
     required this.quantityInQuintal,
     required this.netType,
     required this.timestamp,
-    this.imageUrl,
     required this.isSustainable,
     required this.pointsAwarded,
   });
@@ -26,7 +24,6 @@ class FishCatchModel {
       'quantityInQuintal': quantityInQuintal,
       'netType': netType,
       'timestamp': timestamp.toIso8601String(),
-      'imageUrl': imageUrl,
       'isSustainable': isSustainable,
       'pointsAwarded': pointsAwarded,
     };
@@ -39,7 +36,6 @@ class FishCatchModel {
       quantityInQuintal: map['quantityInQuintal'],
       netType: map['netType'],
       timestamp: DateTime.parse(map['timestamp']),
-      imageUrl: map['imageUrl'],
       isSustainable: map['isSustainable'],
       pointsAwarded: map['pointsAwarded'],
     );

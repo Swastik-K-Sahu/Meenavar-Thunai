@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:meenavar_thunai/theme/app_colors.dart';
+import 'package:meenavar_thunai/theme/app_styles.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
@@ -39,7 +41,7 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
 
     if (currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please log in to record a catch')),
+        const SnackBar(content: Text('Please log in to record a fish catch')),
       );
       return;
     }
@@ -49,7 +51,7 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
         _selectedNetType != null) {
       final viewModel = Provider.of<FishCatchViewModel>(context, listen: false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Logging catch, please wait...')),
+        const SnackBar(content: Text('Logging fish catch, please wait...')),
       );
       try {
         // Add catch
@@ -84,7 +86,7 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  'Catch logged successfully! Points awarded: ${result.sustainabilityCheck?.pointsAwarded ?? 0}',
+                  'Fish Catch logged successfully! Points awarded: ${result.sustainabilityCheck?.pointsAwarded ?? 0}',
                 ),
                 backgroundColor: Colors.green,
               ),
@@ -273,10 +275,16 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fish Catch Log'),
+        title: Text(
+          'Fish Catch Log',
+          style: AppStyles.titleMedium.copyWith(
+            color: AppColors.lightGrey,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: AppColors.primary,
         elevation: 0,
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: Consumer<FishCatchViewModel>(
         builder: (context, viewModel, child) {
@@ -295,7 +303,7 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
                           ),
                           const SizedBox(height: 16),
                           const Text(
-                            'No catches logged yet!',
+                            'No fish catches logged yet!',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -322,7 +330,8 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddCatchDialog(context),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: AppColors.primary,
+        tooltip: 'Add Fish Catch',
         child: const Icon(Icons.add, size: 30),
       ),
     );

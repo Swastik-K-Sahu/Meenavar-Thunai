@@ -78,7 +78,6 @@ class FishCatchViewModel extends ChangeNotifier {
         quantityInQuintal: quantityInQuintal,
         netType: netType,
         timestamp: timestamp,
-        imageUrl: null, // No image URL since upload feature is removed
         isSustainable: sustainabilityCheck.isSustainable,
         pointsAwarded: sustainabilityCheck.pointsAwarded,
       );
