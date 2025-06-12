@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class FishCatchModel {
   final String id;
   final String fishSpecies;
@@ -23,7 +25,7 @@ class FishCatchModel {
       'fishSpecies': fishSpecies,
       'quantityInQuintal': quantityInQuintal,
       'netType': netType,
-      'timestamp': timestamp.toIso8601String(),
+      'timestamp': Timestamp.fromDate(timestamp),
       'isSustainable': isSustainable,
       'pointsAwarded': pointsAwarded,
     };
@@ -35,7 +37,7 @@ class FishCatchModel {
       fishSpecies: map['fishSpecies'],
       quantityInQuintal: map['quantityInQuintal'],
       netType: map['netType'],
-      timestamp: DateTime.parse(map['timestamp']),
+      timestamp: (map['timestamp'] as Timestamp).toDate(),
       isSustainable: map['isSustainable'],
       pointsAwarded: map['pointsAwarded'],
     );

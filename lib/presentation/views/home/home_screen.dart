@@ -58,13 +58,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               onPressed: () {
                 // Dummy notifications action
-                Fluttertoast.showToast(
-                  msg: "Notifications feature coming soon!",
-                  toastLength: Toast.LENGTH_LONG,
-                  gravity: ToastGravity.BOTTOM,
-                  backgroundColor: AppColors.primaryDark,
-                  textColor: Colors.white,
-                );
               },
             ),
             IconButton(
@@ -106,7 +99,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Welcome${user?.displayName != null ? ', ${user!.displayName}' : ''}',
+                      'Vanakkam${user?.displayName != null ? ', ${user!.displayName}' : ''}',
                       style: AppStyles.headlineSmall.copyWith(
                         fontWeight: FontWeight.bold,
                       ),

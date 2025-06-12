@@ -6,8 +6,23 @@ import 'package:uuid/uuid.dart';
 class FishCatchViewModel extends ChangeNotifier {
   final FirebaseService _firebaseService = FirebaseService();
   List<FishCatchModel> _catches = [];
+  List<FishCatchModel> _monthlyCatches = [];
 
   List<FishCatchModel> get catches => _catches;
+
+  // Monthly report getters
+  int get monthlyEndangeredCount {
+    return _monthlyCatches
+        .where((Catch) => Catch.fishSpecies.contains('Tuna (Endangered)'))
+        .length;
+  }
+
+  double get monthlyTotalQuantity {
+    return _monthlyCatches.fold(
+      0.0,
+      (sum, Catch) => sum + Catch.quantityInQuintal,
+    );
+  }
 
   // Fish species list
   final List<String> fishSpecies = ['Tuna (Endangered)', 'Salmon', 'Cod'];
@@ -16,7 +31,14 @@ class FishCatchViewModel extends ChangeNotifier {
   final List<String> netTypes = ['Small', 'Medium', 'Large'];
 
   Future<void> loadCatches(String userId) async {
+    // Load recent catches for display
     _catches = await _firebaseService.fetchCatches(userId);
+    notifyListeners();
+  }
+
+  Future<void> loadMonthlyData(String userId) async {
+    // Load monthly catches for report calculation
+    _monthlyCatches = await _firebaseService.fetchMonthlyCatches(userId);
     notifyListeners();
   }
 
@@ -83,7 +105,23 @@ class FishCatchViewModel extends ChangeNotifier {
       );
 
       await _firebaseService.addFishCatch(userId, newCatch);
-      _catches.add(newCatch);
+
+      // Update both lists
+      _catches.insert(0, newCatch); // Add to front for recent catches
+
+      // Check if the new catch is from current month before adding to monthly catches
+      DateTime now = DateTime.now();
+      DateTime startOfMonth = DateTime(now.year, now.month, 1);
+      DateTime startOfNextMonth = DateTime(now.year, now.month + 1, 1);
+
+      if (timestamp.isAtSameMomentAs(startOfMonth) ||
+          timestamp.isAfter(startOfMonth) &&
+              timestamp.isBefore(startOfNextMonth)) {
+        _monthlyCatches.add(
+          newCatch,
+        ); // Add to monthly catches only if it's current month
+      }
+
       notifyListeners();
 
       return FishCatchResult(
