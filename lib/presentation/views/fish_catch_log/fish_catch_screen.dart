@@ -21,17 +21,48 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
   final TextEditingController _quantityController = TextEditingController();
   String? _selectedNetType;
 
+  // Add a loading state
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
-    // Prefetch data when screen loads
+    // Use addPostFrameCallback to ensure context is available and avoid rebuilding during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
+  }
+
+  // Centralized data loading function
+  Future<void> _loadData() async {
+    // Set loading state to true
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
+
     final User? currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Provider.of<FishCatchViewModel>(
-          context,
-          listen: false,
-        ).loadCatches(currentUser.uid);
+      final viewModel = Provider.of<FishCatchViewModel>(context, listen: false);
+      // Load both recent catches and monthly data
+      await viewModel.loadCatches(currentUser.uid);
+      await viewModel.loadMonthlyData(currentUser.uid);
+    } else {
+      // Handle case where user is not logged in
+      print('User not logged in. Cannot load fish catches.');
+      // Optionally show a message to the user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please log in to view your catches.')),
+        );
+      }
+    }
+
+    // Set loading state to false after data is loaded
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
       });
     }
   }
@@ -112,11 +143,6 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
 
   void _showAddCatchDialog(BuildContext context) {
     final viewModel = Provider.of<FishCatchViewModel>(context, listen: false);
-    setState(() {
-      _selectedFishSpecies = null;
-      _quantityController.clear();
-      _selectedNetType = null;
-    });
     showDialog(
       context: context,
       builder:
@@ -141,7 +167,10 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
                       Icons.set_meal,
                       viewModel.fishSpecies,
                       _selectedFishSpecies,
-                      (value) => setState(() => _selectedFishSpecies = value),
+                      (value) {
+                        if (mounted)
+                          setState(() => _selectedFishSpecies = value);
+                      },
                     ),
 
                     // Quantity in Quintal
@@ -158,7 +187,9 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
                       Icons.grid_on,
                       viewModel.netTypes,
                       _selectedNetType,
-                      (value) => setState(() => _selectedNetType = value),
+                      (value) {
+                        if (mounted) setState(() => _selectedNetType = value);
+                      },
                     ),
 
                     // Date & Time (auto-filled)
@@ -193,7 +224,9 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
               ElevatedButton(
                 onPressed: () {
                   _submitCatch(context);
-                  Navigator.pop(context);
+                  Navigator.pop(
+                    context,
+                  ); // Dismiss the dialog after submission attempt
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
@@ -271,6 +304,161 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
     );
   }
 
+  Widget _buildMonthlyReport(FishCatchViewModel viewModel) {
+    // Check if _monthlyCatches is null or empty before calculating total quantity
+    // and endangered count to avoid potential errors if data hasn't loaded yet.
+    int monthlyEndangeredCount = viewModel.monthlyEndangeredCount;
+    double monthlyTotalQuantity = viewModel.monthlyTotalQuantity;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.assessment, color: AppColors.primary, size: 24),
+              const SizedBox(width: 8),
+              Text(
+                'Monthly Report',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Column(
+            children: [
+              _buildIndicator(
+                title: 'Endangered Species Catch',
+                icon: Icons.warning,
+                current: monthlyEndangeredCount, // Use calculated value
+                maximum: 10,
+                threshold: 6,
+              ),
+              const SizedBox(height: 12),
+              _buildIndicator(
+                title: 'Total Fish Catch (Quintal)',
+                icon: Icons.catching_pokemon,
+                current: monthlyTotalQuantity.toInt(), // Use calculated value
+                maximum: 100,
+                threshold: 60,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIndicator({
+    required String title,
+    required IconData icon,
+    required int current,
+    required int maximum,
+    required int threshold,
+  }) {
+    bool isExceeded = current > maximum;
+    bool isOverThreshold = current > threshold;
+    Color indicatorColor = isOverThreshold ? Colors.red : Colors.green;
+    double progress = isExceeded ? 1.0 : current / maximum;
+    // Handle division by zero for progress if maximum is 0
+    if (maximum == 0) progress = 0.0;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 20, color: indicatorColor),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                isExceeded ? 'Limit Exceeded for this Month' : '$current',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: indicatorColor,
+                ),
+              ),
+              Text(
+                '/$maximum',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.grey[300],
+              valueColor: AlwaysStoppedAnimation<Color>(indicatorColor),
+              minHeight: 8,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Threshold: $threshold',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+              Text(
+                'Max: $maximum',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -284,47 +472,78 @@ class _FishCatchScreenState extends State<FishCatchScreen> {
         ),
         backgroundColor: AppColors.primary,
         elevation: 0,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Consumer<FishCatchViewModel>(
         builder: (context, viewModel, child) {
+          if (_isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
           return Padding(
             padding: const EdgeInsets.all(16.0),
-            child:
-                viewModel.catches.isEmpty
-                    ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.sailing,
-                            size: 80,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'No fish catches logged yet!',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Tap the + button to record your first catch',
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Monthly Report Section
+                _buildMonthlyReport(viewModel),
+
+                // Latest Fish Catches Section
+                Row(
+                  children: [
+                    Icon(Icons.history, color: AppColors.primary, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Latest Fish Catches',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
                       ),
-                    )
-                    : ListView.builder(
-                      itemCount: viewModel.catches.length,
-                      itemBuilder: (context, index) {
-                        final catchData = viewModel.catches[index];
-                        return CatchDetailCard(catchData: catchData);
-                      },
                     ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Catches List
+                Expanded(
+                  child:
+                      viewModel.catches.isEmpty
+                          ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.sailing,
+                                  size: 80,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'No fish catches logged yet!',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'Tap the + button to record your first catch',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          )
+                          : ListView.builder(
+                            itemCount: viewModel.catches.length,
+                            itemBuilder: (context, index) {
+                              final catchData = viewModel.catches[index];
+                              return CatchDetailCard(catchData: catchData);
+                            },
+                          ),
+                ),
+              ],
+            ),
           );
         },
       ),

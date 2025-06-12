@@ -1,19 +1,78 @@
 // lib/widgets/sustainability_badge.dart
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../services/firebase_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class SustainabilityBadge extends StatelessWidget {
-  // Static values for MVP
-  static const int points = 350;
-  static const String level = 'Bronze Fisher';
-  static const String nextMilestone = 'Silver Fisher';
-  static const int pointsToNextLevel = 150;
-
+class SustainabilityBadge extends StatefulWidget {
   const SustainabilityBadge({super.key});
 
+  @override
+  State<SustainabilityBadge> createState() => _SustainabilityBadgeState();
+}
+
+class _SustainabilityBadgeState extends State<SustainabilityBadge> {
+  int _totalPoints = 0;
+  String _level = 'Loading Level...';
+  String _nextMilestone = 'Loading Milestone...';
+  int _pointsToNextLevel = 0;
+  double _progressFactor = 0.0;
+
+  final int _silverFisherThreshold = 1000;
+  final int _goldFisherThreshold = 2000; // Example for a higher level
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAndSetSustainabilityPoints();
+  }
+
+  Future<void> _fetchAndSetSustainabilityPoints() async {
+    final firebaseService = FirebaseService();
+    final user = FirebaseAuth.instance.currentUser!;
+
+    int fetchedPoints = await firebaseService.fetchTotalSustainabilityPoints(
+      user.uid,
+    );
+
+    setState(() {
+      _totalPoints = fetchedPoints;
+      _updateBadgeDetails();
+    });
+  }
+
+  void _updateBadgeDetails() {
+    if (_totalPoints >= _goldFisherThreshold) {
+      _level = 'Gold Fisher';
+      _nextMilestone = 'Master Fisher';
+      _pointsToNextLevel = 0;
+      _progressFactor = 1.0;
+    } else if (_totalPoints >= _silverFisherThreshold) {
+      _level = 'Silver Fisher';
+      _nextMilestone = 'Gold Fisher';
+      _pointsToNextLevel = _goldFisherThreshold - _totalPoints;
+      // Calculate progress based on the points within the current tier
+      _progressFactor =
+          (_totalPoints - _silverFisherThreshold) /
+          (_goldFisherThreshold - _silverFisherThreshold);
+      if (_progressFactor.isNaN) _progressFactor = 0.0;
+    } else {
+      _level = 'Bronze Fisher';
+      _nextMilestone = 'Silver Fisher';
+      _pointsToNextLevel = _silverFisherThreshold - _totalPoints;
+      _progressFactor = _totalPoints / _silverFisherThreshold;
+    }
+    if (_progressFactor > 1.0) _progressFactor = 1.0;
+    if (_progressFactor < 0.0) _progressFactor = 0.0;
+  }
+
   String _getBadgeImage() {
-    // Static badge based on current points level
-    return 'assets/images/bronze_badge.png';
+    if (_totalPoints >= _goldFisherThreshold) {
+      return 'assets/images/bronze_badge.png'; // Dummy image
+    } else if (_totalPoints >= _silverFisherThreshold) {
+      return 'assets/images/bronze_badge.png'; // Dummy image
+    }
+    return 'assets/images/bronze_badge.png'; // Default
   }
 
   @override
@@ -65,16 +124,16 @@ class SustainabilityBadge extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  children: const [
-                    Icon(
+                  children: [
+                    const Icon(
                       Icons.workspace_premium,
                       color: Colors.white,
                       size: 18,
                     ),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Text(
-                      level,
-                      style: TextStyle(
+                      _level,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -84,9 +143,9 @@ class SustainabilityBadge extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 // Points counter
-                const Text(
-                  '$points Points',
-                  style: TextStyle(
+                Text(
+                  '$_totalPoints Points',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -105,7 +164,7 @@ class SustainabilityBadge extends StatelessWidget {
                       ),
                     ),
                     FractionallySizedBox(
-                      widthFactor: 0.7, // Static progress for MVP (350/500)
+                      widthFactor: _progressFactor,
                       child: SizedBox(
                         height: 6,
                         child: DecoratedBox(
@@ -120,7 +179,7 @@ class SustainabilityBadge extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '$pointsToNextLevel points to $nextMilestone',
+                  '$_pointsToNextLevel points to $_nextMilestone',
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.8),
                     fontSize: 12,

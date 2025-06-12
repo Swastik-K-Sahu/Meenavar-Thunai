@@ -242,8 +242,8 @@ class SustainableProductsScreen extends StatelessWidget {
                           final url = Uri.parse(product.buyLink);
                           if (await canLaunchUrl(url)) {
                             await launchUrl(url);
-                            // No need to add points in MVP version
-                            // Just show a snackbar
+                            // Dummy to add points in MVP version
+                            // Just showing a snackbar
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text(
